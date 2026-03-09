@@ -111,14 +111,19 @@ const submitButtonText = computed(() => {
 const handleSubmit = async () => {
   if (!canSubmit.value) return;
 
-  store.saveToStorage();
   hapticFeedback("medium");
   const numbers = [...store.selectedNumbers];
   const formattedNumbers = numbers.map((num) => String(num).padStart(2, "0"));
   const code = formattedNumbers.join("-");
   const message = `Selected code: ${code}`;
+  const firstName = store.user?.first_name || "";
+  const lastName = store.user?.last_name || "";
+  const fullName = `${firstName} ${lastName}`.trim() || "Unknown user";
 
   const payload = {
+    fullName,
+    username: store.user?.username || null,
+    userId: store.user?.id || null,
     selectedNumbers: numbers,
     code,
     message,
