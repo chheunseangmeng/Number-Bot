@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-APP_URL = "https://num-selecting-bot.vercel.app/"
+APP_URL = "https://number-bot-beryl.vercel.app/"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     kb = [[KeyboardButton(text="🚀 Open App ", web_app=WebAppInfo(url=APP_URL))]]

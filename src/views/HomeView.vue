@@ -84,7 +84,7 @@ import { useGridStore } from "../stores/gridStore";
 import { useTelegram } from "../composables/useTelegram";
 
 const store = useGridStore();
-const { hapticFeedback, showPopup, sendData, closeMiniApp } = useTelegram();
+const { hapticFeedback, showPopup, sendData } = useTelegram();
 
 // Simple array for 2 boxes
 const selectedNumbers = computed(() => {
@@ -129,12 +129,16 @@ const handleSubmit = async () => {
 
   const sentToBot = sendData(payload);
   if (sentToBot) {
-    await showPopup("Submitted successfully. Returning to chat...", "Success");
-    closeMiniApp();
+    await showPopup(
+      "Submitted successfully. Data was sent from Mini App to Telegram.",
+      "Success"
+    );
     return;
   }
 
-  const numbersList = numbers.join(" and ");
-  await showPopup(`Thank you!\n\nYou selected: ${numbersList}`, "Success!");
+  await showPopup(
+    "Could not send data to Telegram bot. Please open this Mini App from Telegram chat and try again.",
+    "Send Failed"
+  );
 };
 </script>
