@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex flex-col bg-[var(--tg-theme-bg-color)]">
     <!-- Header -->
-    <!-- <header class="p-2 text-center bg-[var(--tg-theme-secondary-bg-color)]">
+    <header class="p-2 text-center bg-[var(--tg-theme-secondary-bg-color)]">
       <h1 class="text-xl font-bold text-gray-600 italic text-[var(--tg-theme-text-color)]">
         Select number below
       </h1>
@@ -16,7 +16,7 @@
       >
         Referral: {{ store.startParam }}
       </div>
-    </header> -->
+    </header>
 
     <main class="flex-1 p-3">
       <!-- Grid at TOP -->
