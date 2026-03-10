@@ -1,13 +1,13 @@
 <template>
   <div class="min-h-screen flex flex-col bg-[var(--tg-theme-bg-color)]">
     <!-- Header -->
-    <header class="p-2 text-center bg-[var(--tg-theme-secondary-bg-color)]">
-      <h1 class="text-xl font-bold text-gray-600 italic text-[var(--tg-theme-text-color)]">
+    <header class="text-center">
+      <h1 class="text-xl font-bold text-gray-600 italic">
         Select number below
       </h1>
-      <p class="text-sm text-[var(--tg-theme-hint-color)]">
+      <!-- <p class="text-sm text-[var(--tg-theme-hint-color)]">
         Select 2 numbers (1-40)
-      </p>
+      </p> -->
 
    
       <div
