@@ -4,7 +4,6 @@ import { ref, computed } from 'vue'
 export const useGridStore = defineStore('grid', () => {
   // State
   const selectedNumbers = ref([])
-  const user = ref(null)
   const startParam = ref('')
   const MAX_SELECTION = 2  // Maximum 2 numbers can be selected
   
@@ -48,10 +47,7 @@ export const useGridStore = defineStore('grid', () => {
   function clearSelection() {
     selectedNumbers.value = []
   }
-  
-  function setUser(telegramUser) {
-    user.value = telegramUser
-  }
+
   
   function setStartParam(param) {
     startParam.value = param
@@ -60,7 +56,6 @@ export const useGridStore = defineStore('grid', () => {
   return {
     // State
     selectedNumbers,
-    user,
     startParam,
     MAX_SELECTION,
     
@@ -75,7 +70,6 @@ export const useGridStore = defineStore('grid', () => {
     deselectNumber,
     toggleNumber,
     clearSelection,
-    setUser,
     setStartParam,
   }
 })

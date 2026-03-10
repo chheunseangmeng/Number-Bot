@@ -1,23 +1,15 @@
 <template>
   <div class="min-h-screen flex flex-col bg-[var(--tg-theme-bg-color)]">
     <!-- Header -->
-    <header class="p-5 text-center bg-[var(--tg-theme-secondary-bg-color)]">
-      <h1 class="text-2xl font-bold text-[var(--tg-theme-text-color)]">
-        Choose the number below
+    <header class="p-2 text-center bg-[var(--tg-theme-secondary-bg-color)]">
+      <h1 class="text-xl font-bold text-gray-600 italic text-[var(--tg-theme-text-color)]">
+        Select number below
       </h1>
-      <p class="mt-2 text-sm text-[var(--tg-theme-hint-color)]">
+      <p class="text-sm text-[var(--tg-theme-hint-color)]">
         Select 2 numbers (1-40)
       </p>
 
-      <!-- User info from store -->
-      <div
-        v-if="store.user"
-        class="mt-2 text-xs text-[var(--tg-theme-hint-color)]"
-      >
-        Hello, {{ store.user.first_name }}!
-      </div>
-
-      <!-- Start parameter from store -->
+      <!-- Start parameter from store (KEPT) -->
       <div
         v-if="store.startParam"
         class="mt-2 text-xs text-[var(--tg-theme-hint-color)]"
@@ -26,15 +18,17 @@
       </div>
     </header>
 
-    <main class="flex-1 p-5">
+    <main class="flex-1 p-3">
       <!-- Grid at TOP -->
       <NumberGrid />
 
+      <hr class="mt-2 mb-2">
+
       <!-- 2 Boxes in MIDDLE -->
-      <div class="grid grid-cols-4 gap-2 max-w-md mx-auto mt-3 border-t py-2">
+      <div class="grid grid-cols-4 gap-2 max-w-md mx-auto">
         <!-- Box 1-->
         <div
-          class="col-span-2 h-24 rounded-xl flex items-center justify-center text-3xl font-bold transition-all duration-200"
+          class="col-span-2 h-12 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-200"
           :class="[
             selectedNumbers[0]
               ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
@@ -46,7 +40,7 @@
 
         <!-- Box 2 -->
         <div
-          class="col-span-2 h-24 rounded-xl flex items-center justify-center text-3xl font-bold transition-all duration-200"
+          class="col-span-2 h-12 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-200"
           :class="[
             selectedNumbers[1]
               ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
@@ -59,7 +53,7 @@
 
       <!-- Selection counter under boxes -->
       <p
-        class="text-center text-sm text-[var(--tg-theme-hint-color)] mt-2 mb-4"
+        class="text-center text-sm mt-1 mb-1 text-[var(--tg-theme-hint-color)]"
       >
         {{ store.selectedCount }}/2 numbers selected
       </p>
@@ -113,21 +107,12 @@ const handleSubmit = async () => {
 
   hapticFeedback("medium");
   const numbers = [...store.selectedNumbers];
-  const formattedNumbers = numbers.map((num) => String(num).padStart(2, "0"));
-  const code = formattedNumbers.join("-");
-  const message = `Selected code: ${code}`;
-  const firstName = store.user?.first_name || "";
-  const lastName = store.user?.last_name || "";
-  const fullName = `${firstName} ${lastName}`.trim() || "Unknown user";
-
+  
+  // REMOVED: All user-related data (fullName, username, userId)
+  
+  // SIMPLIFIED payload - only send what's needed
   const payload = {
-    fullName,
-    username: store.user?.username || null,
-    userId: store.user?.id || null,
     selectedNumbers: numbers,
-    code,
-    message,
-    selectedCount: numbers.length,
     startParam: store.startParam || null,
     submittedAt: new Date().toISOString(),
   };
@@ -135,14 +120,14 @@ const handleSubmit = async () => {
   const sentToBot = sendData(payload);
   if (sentToBot) {
     await showPopup(
-      "Submitted successfully. Data was sent from Mini App to Telegram.",
+      "Submitted successfully!",
       "Success"
     );
     return;
   }
 
   await showPopup(
-    "Could not send data to Telegram bot. Please open this Mini App from Telegram chat and try again.",
+    "Could not send data to Telegram bot. Please try again.",
     "Send Failed"
   );
 };

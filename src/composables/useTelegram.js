@@ -15,12 +15,6 @@ export function useTelegram() {
       tg.ready()
       tg.expand()
       
-      // Save user to store
-      const user = tg.initDataUnsafe?.user
-      if (user) {
-        store.setUser(user)
-      }
-      
       // Save start param to store
       const startParam = tg.initDataUnsafe?.start_param || ''
       if (startParam) {
@@ -35,7 +29,7 @@ export function useTelegram() {
         })
       }
       
-      console.log('Telegram Mini App initialized', { user, startParam })
+      console.log('Telegram Mini App initialized', { startParam })
     } else {
       console.log('Running outside Telegram - using fallback mode')
     }
