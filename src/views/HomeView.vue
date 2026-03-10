@@ -2,7 +2,7 @@
   <div class="min-h-screen flex flex-col bg-[var(--tg-theme-bg-color)]">
     <!-- Header -->
     <header class="text-center">
-      <h1 class="text-xl font-bold text-gray-600 italic">
+      <h1 class="text-md font-bold text-gray-600 italic">
         Select number below
       </h1>
       <!-- <p class="text-sm text-[var(--tg-theme-hint-color)]">
