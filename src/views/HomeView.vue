@@ -5,46 +5,55 @@
       <h1 class="text-md font-bold text-gray-600 italic">
         Select number below
       </h1>
-      <div v-if="store.startParam" class="mt-1 text-xs text-[var(--tg-theme-hint-color)]">
+      <div
+        v-if="store.startParam"
+        class="mt-1 text-xs text-[var(--tg-theme-hint-color)]"
+      >
         Referral: {{ store.startParam }}
       </div>
     </header>
 
     <!-- Shared container for grid + boxes + counter + submit -->
     <div class="flex-1 flex flex-col items-center p-2 min-h-0 w-full">
-
-      <!-- Number Grid -->
-      <div class="grid grid-cols-4 gap-2 w-full max-w-md flex-1 min-h-0">
+      <!-- Number Grid Cell-->
+      <div class="grid grid-cols-4 gap-2 w-full max-w-md flex-1 min-h-0"
+           style="grid-auto-flow: column; grid-template-rows: repeat(10, 1fr)">
         <GridCell v-for="n in 40" :key="n" :number="n" />
       </div>
 
-      <hr class="w-full max-w-md my-2">
+      <hr class="w-full max-w-md my-2" />
 
       <!-- Contain 2 Boxes -->
       <div class="flex gap-2 w-full max-w-md flex-none">
         <!-- Box 1 -->
         <div
           class="flex-1 h-12 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-200"
-          :class="selectedNumbers[0]
-            ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
-            : 'bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-hint-color)] border border-dashed border-[var(--tg-theme-hint-color)]'"
+          :class="
+            selectedNumbers[0]
+              ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
+              : 'bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-hint-color)] border border-dashed border-[var(--tg-theme-hint-color)]'
+          "
         >
-          {{ selectedNumbers[0] || '?' }}
+          {{ selectedNumbers[0] || "?" }}
         </div>
 
         <!-- Box 2 -->
         <div
           class="flex-1 h-12 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-200"
-          :class="selectedNumbers[1]
-            ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
-            : 'bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-hint-color)] border border-dashed border-[var(--tg-theme-hint-color)]'"
+          :class="
+            selectedNumbers[1]
+              ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
+              : 'bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-hint-color)] border border-dashed border-[var(--tg-theme-hint-color)]'
+          "
         >
-          {{ selectedNumbers[1] || '?' }}
+          {{ selectedNumbers[1] || "?" }}
         </div>
       </div>
 
       <!-- Counter -->
-      <p class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1">
+      <p
+        class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1"
+      >
         {{ store.selectedCount }}/2 numbers selected
       </p>
 
@@ -56,7 +65,6 @@
           @click="handleSubmit"
         />
       </div>
-
     </div>
   </div>
 </template>
@@ -105,7 +113,7 @@ const handleSubmit = async () => {
   } else {
     await showPopup(
       "Could not send data to Telegram bot. Please try again.",
-      "Send Failed"
+      "Send Failed",
     );
   }
 };
