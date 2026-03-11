@@ -1,6 +1,6 @@
 <template>
   <button 
-    class="w-full h-10 aspect-square rounded-md text-xl font-semibold transition-all duration-200
+    class="w-full h-9 aspect-square rounded-md text-xl font-semibold transition-all duration-200
            flex items-center justify-center shadow-sm active:scale-95
            focus:outline-none focus:ring-2 focus:ring-[var(--tg-theme-button-color)]"
     :class="[

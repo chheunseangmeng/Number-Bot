@@ -1,6 +1,6 @@
 <template>
   <button 
-    class="w-full py-3 px-6 rounded-md text-lg font-bold transition-all
+    class="w-full py-2 px-6 rounded-md text-lg font-semibold transition-all
            active:scale-98 disabled:opacity-30 disabled:cursor-not-allowed
            focus:outline-none focus:ring-2 focus:ring-[var(--tg-theme-button-color)]"
     :class="[
