@@ -5,10 +5,6 @@
       <h1 class="text-md font-bold text-gray-600 italic">
         Select number below
       </h1>
-      <!-- <p class="text-sm text-[var(--tg-theme-hint-color)]">
-        Select 2 numbers (1-40)
-      </p> -->
-
    
       <div
         v-if="store.startParam"
