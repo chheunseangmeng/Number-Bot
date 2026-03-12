@@ -17,6 +17,7 @@
       <!-- Games List -->
       <div
         v-if="store.games.length > 0 || store.selectedCount > 0"
+        v-show="isShowGames"
         class="w-full max-w-md flex-none mb-2"
       >
         <!-- Saved games -->
@@ -100,10 +101,15 @@
       </div>
 
       <!-- Counter -->
-      <p class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1">
+      <!-- <p class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1">
         {{ store.selectedCount }}/2 selected —
         Game {{ store.editingIndex !== null ? store.editingIndex + 1 : store.gamesCount + 1 }}
         of {{ store.MAX_GAMES }}
+      </p> -->
+
+
+      <p @click="isShowGames = !isShowGames"  class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1 underline cursor-pointer">
+        {{ isShowGames ? "Hide all game lists":"Show all game lists" }}
       </p>
 
       <!-- Action Buttons -->
@@ -138,7 +144,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import NumberGrid from "@/components/grid/NumberGrid.vue";
 import NextButton from "@/components/ui/NextButton.vue";
 import { useGridStore } from "../stores/gridStore";
@@ -154,6 +160,8 @@ const selectedNumbers = computed(() => {
   });
   return boxes;
 });
+
+const isShowGames = ref(false)
 
 const canSubmit = computed(() => store.selectedCount === 2);
 
