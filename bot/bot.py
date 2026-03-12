@@ -15,16 +15,16 @@ APP_URL = "https://number-bot-beryl.vercel.app/"
 OPEN_APP_TEXT = "🚀 Open App"
 
 
-def parse_selected_numbers(data: dict) -> list[int]:
-    raw_numbers = data.get("selectedNumbers")
-    if not isinstance(raw_numbers, list):
+def parse_games(data: dict) -> list[list[int]]:
+    raw_games = data.get("games")
+    if not isinstance(raw_games, list):
         return []
 
-    parsed_numbers = []
-    for value in raw_numbers:
-        if isinstance(value, int):
-            parsed_numbers.append(value)
-    return parsed_numbers
+    parsed_games = []
+    for game in raw_games:
+        if isinstance(game, list) and len(game) == 2:
+            parsed_games.append([int(game[0]), int(game[1])])
+    return parsed_games
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -53,14 +53,21 @@ async def on_web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await message.reply_text("Invalid data received from Mini App.")
         return
 
-    selected_numbers = parse_selected_numbers(payload)
-    numbers_text = ", ".join(str(num) for num in selected_numbers) if selected_numbers else "-"
+    games = parse_games(payload)
 
     print(
-        f"[WEB_APP_DATA] chat_id={chat_id} full_name={full_name} selected_numbers={selected_numbers}",
+        f"[WEB_APP_DATA] chat_id={chat_id} full_name={full_name} games={games}",
         flush=True,
     )
-    await message.reply_text(f"Thank you {full_name}\nYour numbers: {numbers_text}")
+
+    if not games:
+        await message.reply_text("No games received.")
+        return
+
+    games_text = "\n".join(
+        f"Game {i + 1}: {g[0]} , {g[1]}" for i, g in enumerate(games)
+    )
+    await message.reply_text(f"Thank you {full_name}!\n\n{games_text}")
 
 
 def main() -> None:
