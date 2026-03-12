@@ -2,10 +2,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export const useGridStore = defineStore('grid', () => {
-  const games = ref([])         // all saved games
+  const games = ref([])
   const selectedNumbers = ref([])
   const startParam = ref('')
   const editingIndex = ref(null)
+  const _pendingSelection = ref([])
   const MAX_SELECTION = 2
   const MAX_GAMES = 5
 
@@ -41,32 +42,37 @@ export const useGridStore = defineStore('grid', () => {
   }
 
   function saveGame() {
-    // Save current selection — either update existing or add new
     if (selectedNumbers.value.length !== MAX_SELECTION) return
     if (editingIndex.value !== null) {
       games.value[editingIndex.value] = [...selectedNumbers.value]
       editingIndex.value = null
-    } else if (games.value.length < MAX_GAMES) {
+      if (_pendingSelection.value.length === MAX_SELECTION) {
+        selectedNumbers.value = [..._pendingSelection.value]
+        _pendingSelection.value = []
+      } else {
+        selectedNumbers.value = []
+      }
+    } else if (games.value.length < MAX_GAMES - 1) {
       games.value.push([...selectedNumbers.value])
+      selectedNumbers.value = []
     }
-    selectedNumbers.value = []
   }
 
   function editGame(index) {
-    // First save whatever is currently being worked on
     if (editingIndex.value !== null) {
-      // Was editing another game — save it back
       if (selectedNumbers.value.length === MAX_SELECTION) {
         games.value[editingIndex.value] = [...selectedNumbers.value]
       }
     } else {
-      // Was on a new game — save it as last game slot temporarily
-      if (selectedNumbers.value.length === MAX_SELECTION && games.value.length < MAX_GAMES) {
-        games.value.push([...selectedNumbers.value])
+      if (games.value.length < MAX_GAMES - 1) {
+        if (selectedNumbers.value.length === MAX_SELECTION) {
+          games.value.push([...selectedNumbers.value])
+        }
+      } else {
+        _pendingSelection.value = [...selectedNumbers.value]
       }
     }
 
-    // Now load the requested game
     editingIndex.value = index
     selectedNumbers.value = [...games.value[index]]
   }
@@ -75,6 +81,7 @@ export const useGridStore = defineStore('grid', () => {
     games.value = []
     selectedNumbers.value = []
     editingIndex.value = null
+    _pendingSelection.value = []
   }
 
   function setStartParam(param) {

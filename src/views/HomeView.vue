@@ -2,14 +2,18 @@
   <div class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)]">
     <!-- Header -->
     <header class="text-center flex-none">
-      <h1 class="text-md font-bold text-gray-600 italic">Select your numbers</h1>
-      <div v-if="store.startParam" class="mt-1 text-xs text-[var(--tg-theme-hint-color)]">
+      <h1 class="text-md font-bold text-gray-600 italic">
+        Select your numbers
+      </h1>
+      <div
+        v-if="store.startParam"
+        class="mt-1 text-xs text-[var(--tg-theme-hint-color)]"
+      >
         Referral: {{ store.startParam }}
       </div>
     </header>
 
     <div class="flex-1 flex flex-col items-center p-2 min-h-0 w-full">
-
       <NumberGrid />
 
       <hr class="w-full max-w-md my-2" />
@@ -34,21 +38,27 @@
         >
           <span
             class="text-sm"
-            :class="store.editingIndex === index ? 'text-[var(--tg-theme-button-text-color)]' : 'text-[var(--tg-theme-hint-color)]'"
+            :class="
+              store.editingIndex === index
+                ? 'text-[var(--tg-theme-button-text-color)]'
+                : 'text-[var(--tg-theme-hint-color)]'
+            "
           >
             Game {{ index + 1 }}
           </span>
           <span
             class="text-sm font-bold"
-            :class="store.editingIndex === index ? 'text-[var(--tg-theme-button-text-color)]' : 'text-[var(--tg-theme-text-color)]'"
+            :class="
+              store.editingIndex === index
+                ? 'text-[var(--tg-theme-button-text-color)]'
+                : 'text-[var(--tg-theme-text-color)]'
+            "
           >
             <template v-if="store.editingIndex === index">
               {{ selectedNumbers[0] !== "?" ? selectedNumbers[0] : "..." }} ,
               {{ selectedNumbers[1] !== "?" ? selectedNumbers[1] : "..." }}
             </template>
-            <template v-else>
-              {{ game[0] }} , {{ game[1] }}
-            </template>
+            <template v-else> {{ game[0] }} , {{ game[1] }} </template>
           </span>
         </div>
 
@@ -57,7 +67,9 @@
           v-if="store.editingIndex === null"
           class="flex items-center justify-between px-3 py-1 mb-1 rounded-md bg-[var(--tg-theme-secondary-bg-color)]"
         >
-          <span class="text-sm text-[var(--tg-theme-hint-color)]">Game {{ store.gamesCount + 1 }}</span>
+          <span class="text-sm text-[var(--tg-theme-hint-color)]"
+            >Game {{ store.gamesCount + 1 }}</span
+          >
           <span class="text-sm font-bold text-[var(--tg-theme-text-color)]">
             {{ selectedNumbers[0] !== "?" ? selectedNumbers[0] : "..." }} ,
             {{ selectedNumbers[1] !== "?" ? selectedNumbers[1] : "..." }}
@@ -80,7 +92,8 @@
             v-if="selectedNumbers[0] !== '?'"
             class="absolute top-0 right-1 text-sm cursor-pointer"
             @click="store.deselectNumber(store.selectedNumbers[0])"
-          >❌</span>
+            >❌</span
+          >
         </div>
 
         <div
@@ -96,25 +109,23 @@
             v-if="selectedNumbers[1] !== '?'"
             class="absolute top-0 right-1 text-sm cursor-pointer"
             @click="store.deselectNumber(store.selectedNumbers[1])"
-          >❌</span>
+            >❌</span
+          >
         </div>
       </div>
 
-      <!-- Counter -->
-      <!-- <p class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1">
-        {{ store.selectedCount }}/2 selected —
-        Game {{ store.editingIndex !== null ? store.editingIndex + 1 : store.gamesCount + 1 }}
-        of {{ store.MAX_GAMES }}
-      </p> -->
-
-
-      <p @click="isShowGames = !isShowGames"  class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1 underline cursor-pointer">
-        {{ isShowGames ? "Hide all game lists":"Show all game lists" }}
+      <!-- Show or hide game lists -->
+      <p @click="isShowGames = !isShowGames" class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1 underline cursor-pointer">
+        {{ isShowGames ? "Hide" : "Show" }} game list ({{ store.gamesCount + (store.editingIndex === null ? 1 : 0) }}/{{ store.MAX_GAMES }})
       </p>
 
       <!-- Action Buttons -->
       <div class="w-full max-w-md flex-none mt-1 mb-1">
-        <NextButton v-if="!canSubmit" :disabled="true" text="Select 2 numbers" />
+        <NextButton
+          v-if="!canSubmit"
+          :disabled="true"
+          text="Select 2 numbers"
+        />
         <div v-else class="flex gap-2">
           <NextButton
             v-if="canSave"
@@ -138,7 +149,6 @@
           />
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -161,18 +171,19 @@ const selectedNumbers = computed(() => {
   return boxes;
 });
 
-const isShowGames = ref(false)
+const isShowGames = ref(false);
 
 const canSubmit = computed(() => store.selectedCount === 2);
 
-const canAddGame = computed(() =>
-  store.selectedCount === 2 &&
-  store.editingIndex === null &&
-  store.gamesCount < store.MAX_GAMES - 1
+const canAddGame = computed(
+  () =>
+    store.selectedCount === 2 &&
+    store.editingIndex === null &&
+    store.gamesCount < store.MAX_GAMES - 1,
 );
 
-const canSave = computed(() =>
-  store.selectedCount === 2 && store.editingIndex !== null
+const canSave = computed(
+  () => store.selectedCount === 2 && store.editingIndex !== null,
 );
 
 const handleSaveGame = () => {
@@ -189,9 +200,12 @@ const handleSubmit = async () => {
   if (!canSubmit.value) return;
   hapticFeedback("medium");
 
-  const allGames = store.editingIndex !== null
-    ? store.games.map((g, i) => i === store.editingIndex ? [...store.selectedNumbers] : g)
-    : [...store.games, [...store.selectedNumbers]];
+  const allGames =
+    store.editingIndex !== null
+      ? store.games.map((g, i) =>
+          i === store.editingIndex ? [...store.selectedNumbers] : g,
+        )
+      : [...store.games, [...store.selectedNumbers]];
 
   const payload = {
     games: allGames,
@@ -203,7 +217,10 @@ const handleSubmit = async () => {
   if (sentToBot) {
     await showPopup("Submitted successfully!", "Success");
   } else {
-    await showPopup("Could not send data to Telegram bot. Please try again.", "Send Failed");
+    await showPopup(
+      "Could not send data to Telegram bot. Please try again.",
+      "Send Failed",
+    );
   }
 };
 </script>
