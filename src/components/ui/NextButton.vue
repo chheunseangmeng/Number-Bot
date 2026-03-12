@@ -1,12 +1,12 @@
 <template>
-  <button 
+  <button
     class="w-full py-3 px-6 rounded-md text-lg font-semibold transition-all
            active:scale-98 disabled:opacity-30 disabled:cursor-not-allowed
            focus:outline-none focus:ring-2 focus:ring-[var(--tg-theme-button-color)]"
     :class="[
-      variant === 'primary' 
-        ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] hover:opacity-90' 
-        : 'bg-gray-300 text-gray-500'
+      variant === 'primary'
+        ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] hover:opacity-90'
+        : 'bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-hint-color)] hover:opacity-90'
     ]"
     :disabled="disabled"
     @click="$emit('click')"
@@ -19,7 +19,7 @@
 defineProps({
   text: {
     type: String,
-    default: 'Submit'
+    default: 'Next'
   },
   variant: {
     type: String,

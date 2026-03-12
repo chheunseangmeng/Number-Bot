@@ -2,84 +2,151 @@
   <div class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)]">
     <!-- Header -->
     <header class="text-center flex-none">
-      <h1 class="text-md font-bold text-gray-600 italic">
-        Select number below
-      </h1>
-      <div
-        v-if="store.startParam"
-        class="mt-1 text-xs text-[var(--tg-theme-hint-color)]"
-      >
+      <h1 class="text-md font-bold text-gray-600 italic">Select your numbers</h1>
+      <div v-if="store.startParam" class="mt-1 text-xs text-[var(--tg-theme-hint-color)]">
         Referral: {{ store.startParam }}
       </div>
     </header>
 
-    <!-- Shared container for grid + boxes + counter + submit -->
     <div class="flex-1 flex flex-col items-center p-2 min-h-0 w-full">
-      <!-- Number Grid Cell-->
-      <div class="grid grid-cols-4 gap-2 w-full max-w-md flex-1 min-h-0"
-           style="grid-auto-flow: column; grid-template-rows: repeat(10, 1fr)">
-        <GridCell v-for="n in 40" :key="n" :number="n" />
-      </div>
+
+      <NumberGrid />
 
       <hr class="w-full max-w-md my-2" />
 
-      <!-- Contain 2 Boxes -->
-      <div class="flex gap-2 w-full max-w-md flex-none">
-        <!-- Box 1 -->
+      <!-- Games List -->
+      <div
+        v-if="store.games.length > 0 || store.selectedCount > 0"
+        class="w-full max-w-md flex-none mb-2"
+      >
+        <!-- Saved games -->
         <div
-          class="flex-1 h-12 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-200"
+          v-for="(game, index) in store.games"
+          :key="index"
+          class="flex items-center justify-between px-3 py-1 mb-1 rounded-md cursor-pointer active:scale-95 transition-all duration-150"
           :class="
-            selectedNumbers[0]
-              ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
-              : 'bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-hint-color)] border border-dashed border-[var(--tg-theme-hint-color)]'
+            store.editingIndex === index
+              ? 'bg-[var(--tg-theme-button-color)]'
+              : 'bg-[var(--tg-theme-secondary-bg-color)]'
           "
+          @click="handleEditGame(index)"
         >
-          {{ selectedNumbers[0] || "?" }}
+          <span
+            class="text-sm"
+            :class="store.editingIndex === index ? 'text-[var(--tg-theme-button-text-color)]' : 'text-[var(--tg-theme-hint-color)]'"
+          >
+            Game {{ index + 1 }}
+          </span>
+          <span
+            class="text-sm font-bold"
+            :class="store.editingIndex === index ? 'text-[var(--tg-theme-button-text-color)]' : 'text-[var(--tg-theme-text-color)]'"
+          >
+            <template v-if="store.editingIndex === index">
+              {{ selectedNumbers[0] !== "?" ? selectedNumbers[0] : "..." }} ,
+              {{ selectedNumbers[1] !== "?" ? selectedNumbers[1] : "..." }}
+            </template>
+            <template v-else>
+              {{ game[0] }} , {{ game[1] }}
+            </template>
+          </span>
         </div>
 
-        <!-- Box 2 -->
+        <!-- Current new game row (only when not editing) -->
         <div
-          class="flex-1 h-12 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-200"
+          v-if="store.editingIndex === null"
+          class="flex items-center justify-between px-3 py-1 mb-1 rounded-md bg-[var(--tg-theme-secondary-bg-color)]"
+        >
+          <span class="text-sm text-[var(--tg-theme-hint-color)]">Game {{ store.gamesCount + 1 }}</span>
+          <span class="text-sm font-bold text-[var(--tg-theme-text-color)]">
+            {{ selectedNumbers[0] !== "?" ? selectedNumbers[0] : "..." }} ,
+            {{ selectedNumbers[1] !== "?" ? selectedNumbers[1] : "..." }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Selection Boxes -->
+      <div class="flex gap-2 w-full max-w-md flex-none">
+        <div
+          class="flex-1 h-12 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-200 relative"
           :class="
-            selectedNumbers[1]
+            selectedNumbers[0] !== '?'
               ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
               : 'bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-hint-color)] border border-dashed border-[var(--tg-theme-hint-color)]'
           "
         >
-          {{ selectedNumbers[1] || "?" }}
+          {{ selectedNumbers[0] }}
+          <span
+            v-if="selectedNumbers[0] !== '?'"
+            class="absolute top-0 right-1 text-sm cursor-pointer"
+            @click="store.deselectNumber(store.selectedNumbers[0])"
+          >❌</span>
+        </div>
+
+        <div
+          class="flex-1 h-12 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-200 relative"
+          :class="
+            selectedNumbers[1] !== '?'
+              ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
+              : 'bg-[var(--tg-theme-secondary-bg-color)] text-[var(--tg-theme-hint-color)] border border-dashed border-[var(--tg-theme-hint-color)]'
+          "
+        >
+          {{ selectedNumbers[1] }}
+          <span
+            v-if="selectedNumbers[1] !== '?'"
+            class="absolute top-0 right-1 text-sm cursor-pointer"
+            @click="store.deselectNumber(store.selectedNumbers[1])"
+          >❌</span>
         </div>
       </div>
 
       <!-- Counter -->
-      <p
-        class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1"
-      >
-        {{ store.selectedCount }}/2 numbers selected
+      <p class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1">
+        {{ store.selectedCount }}/2 selected —
+        Game {{ store.editingIndex !== null ? store.editingIndex + 1 : store.gamesCount + 1 }}
+        of {{ store.MAX_GAMES }}
       </p>
 
-      <!-- Submit Button -->
+      <!-- Action Buttons -->
       <div class="w-full max-w-md flex-none mt-1 mb-1">
-        <SubmitButton
-          :disabled="!canSubmit"
-          :text="submitButtonText"
-          @click="handleSubmit"
-        />
+        <NextButton v-if="!canSubmit" :disabled="true" text="Select 2 numbers" />
+        <div v-else class="flex gap-2">
+          <NextButton
+            v-if="canSave"
+            text="Save"
+            variant="secondary"
+            class="flex-1"
+            @click="handleSaveGame"
+          />
+          <NextButton
+            v-if="canAddGame"
+            text="Add Game"
+            variant="secondary"
+            class="flex-1"
+            @click="handleSaveGame"
+          />
+          <NextButton
+            text="Next"
+            variant="primary"
+            class="flex-1"
+            @click="handleSubmit"
+          />
+        </div>
       </div>
+
     </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from "vue";
-import GridCell from "../components/grid/GridCell.vue";
-import SubmitButton from "../components/ui/SubmitButton.vue";
+import NumberGrid from "@/components/grid/NumberGrid.vue";
+import NextButton from "@/components/ui/NextButton.vue";
 import { useGridStore } from "../stores/gridStore";
 import { useTelegram } from "../composables/useTelegram";
 
 const store = useGridStore();
 const { hapticFeedback, showPopup, sendData } = useTelegram();
 
-// Selected numbers for boxes
 const selectedNumbers = computed(() => {
   const boxes = ["?", "?"];
   store.selectedNumbers.forEach((num, i) => {
@@ -88,21 +155,38 @@ const selectedNumbers = computed(() => {
   return boxes;
 });
 
-// Submit button
 const canSubmit = computed(() => store.selectedCount === 2);
-const submitButtonText = computed(() => {
-  if (store.selectedCount === 0) return "Select 2 numbers";
-  if (store.selectedCount === 1) return "Select 1 more";
-  return "Submit";
-});
 
-// Handle submit
+const canAddGame = computed(() =>
+  store.selectedCount === 2 &&
+  store.editingIndex === null &&
+  store.gamesCount < store.MAX_GAMES - 1
+);
+
+const canSave = computed(() =>
+  store.selectedCount === 2 && store.editingIndex !== null
+);
+
+const handleSaveGame = () => {
+  store.saveGame();
+  hapticFeedback("light");
+};
+
+const handleEditGame = (index) => {
+  store.editGame(index);
+  hapticFeedback("light");
+};
+
 const handleSubmit = async () => {
   if (!canSubmit.value) return;
   hapticFeedback("medium");
 
+  const allGames = store.editingIndex !== null
+    ? store.games.map((g, i) => i === store.editingIndex ? [...store.selectedNumbers] : g)
+    : [...store.games, [...store.selectedNumbers]];
+
   const payload = {
-    selectedNumbers: [...store.selectedNumbers],
+    games: allGames,
     startParam: store.startParam || null,
     submittedAt: new Date().toISOString(),
   };
@@ -111,10 +195,7 @@ const handleSubmit = async () => {
   if (sentToBot) {
     await showPopup("Submitted successfully!", "Success");
   } else {
-    await showPopup(
-      "Could not send data to Telegram bot. Please try again.",
-      "Send Failed",
-    );
+    await showPopup("Could not send data to Telegram bot. Please try again.", "Send Failed");
   }
 };
 </script>
