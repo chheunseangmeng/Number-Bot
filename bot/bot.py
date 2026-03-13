@@ -16,7 +16,7 @@ from db.db import init_db, close_db, get_or_create_user, save_games, save_receip
 from receipt.receipt import generate_transaction_id
 from pdf.pdf import generate_receipt_pdf
 
-APP_URL = "https://number-bot-beryl.vercel.app/"
+APP_URL = "https://luckynumberbot.vercel.app/"
 OPEN_APP_TEXT = "🚀 Open App"
 
 
