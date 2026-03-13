@@ -115,8 +115,13 @@
       </div>
 
       <!-- Show or hide game lists -->
-      <p @click="isShowGames = !isShowGames" class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1 underline cursor-pointer">
-        {{ isShowGames ? "Hide" : "Show" }} game list ({{ store.gamesCount + (store.editingIndex === null ? 1 : 0) }}/{{ store.MAX_GAMES }})
+      <p
+        @click="isShowGames = !isShowGames"
+        class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1 underline cursor-pointer"
+      >
+        {{ isShowGames ? "Hide" : "Show" }} game list ({{
+          store.gamesCount + (store.editingIndex === null ? 1 : 0)
+        }}/{{ store.MAX_GAMES }})
       </p>
 
       <!-- Action Buttons -->
@@ -154,73 +159,53 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
-import NumberGrid from "@/components/grid/NumberGrid.vue";
-import NextButton from "@/components/ui/NextButton.vue";
-import { useGridStore } from "../stores/gridStore";
-import { useTelegram } from "../composables/useTelegram";
+import { computed, ref } from "vue"
+import { useRouter } from "vue-router"
+import NumberGrid from "@/components/grid/NumberGrid.vue"
+import NextButton from "@/components/ui/NextButton.vue"
+import { useGridStore } from "../stores/gridStore"
+import { useTelegram } from "../composables/useTelegram"
 
-const store = useGridStore();
-const { hapticFeedback, showPopup, sendData } = useTelegram();
+const store = useGridStore()
+const router = useRouter()
+const { hapticFeedback } = useTelegram()
 
 const selectedNumbers = computed(() => {
-  const boxes = ["?", "?"];
+  const boxes = ["?", "?"]
   store.selectedNumbers.forEach((num, i) => {
-    if (i < 2) boxes[i] = num;
-  });
-  return boxes;
-});
+    if (i < 2) boxes[i] = num
+  })
+  return boxes
+})
 
-const isShowGames = ref(false);
+const isShowGames = ref(false)
 
-const canSubmit = computed(() => store.selectedCount === 2);
+const canSubmit = computed(() => store.selectedCount === 2)
 
 const canAddGame = computed(
   () =>
     store.selectedCount === 2 &&
     store.editingIndex === null &&
-    store.gamesCount < store.MAX_GAMES - 1,
-);
+    store.gamesCount < store.MAX_GAMES - 1
+)
 
 const canSave = computed(
-  () => store.selectedCount === 2 && store.editingIndex !== null,
-);
+  () => store.selectedCount === 2 && store.editingIndex !== null
+)
 
 const handleSaveGame = () => {
-  store.saveGame();
-  hapticFeedback("light");
-};
+  store.saveGame()
+  hapticFeedback("light")
+}
 
 const handleEditGame = (index) => {
-  store.editGame(index);
-  hapticFeedback("light");
-};
+  store.editGame(index)
+  hapticFeedback("light")
+}
 
-const handleSubmit = async () => {
-  if (!canSubmit.value) return;
-  hapticFeedback("medium");
-
-  const allGames =
-    store.editingIndex !== null
-      ? store.games.map((g, i) =>
-          i === store.editingIndex ? [...store.selectedNumbers] : g,
-        )
-      : [...store.games, [...store.selectedNumbers]];
-
-  const payload = {
-    games: allGames,
-    startParam: store.startParam || null,
-    submittedAt: new Date().toISOString(),
-  };
-
-  const sentToBot = sendData(payload);
-  if (sentToBot) {
-    await showPopup("Submitted successfully!", "Success");
-  } else {
-    await showPopup(
-      "Could not send data to Telegram bot. Please try again.",
-      "Send Failed",
-    );
-  }
-};
+const handleSubmit = () => {
+  if (!canSubmit.value) return
+  hapticFeedback("medium")
+  router.push("/payment")
+}
 </script>
