@@ -8,19 +8,30 @@ export function useTelegram() {
     const tg = getTelegramWebApp()
     return Boolean(tg && typeof tg.initData === 'string' && tg.initData.length > 0)
   }
-  
+
   onMounted(() => {
     const tg = getTelegramWebApp()
     if (tg) {
       tg.ready()
       tg.expand()
-      
+
       // Save start param to store
       const startParam = tg.initDataUnsafe?.start_param || ''
       if (startParam) {
         store.setStartParam(startParam)
       }
-      
+
+      // Save user data to store
+      const user = tg.initDataUnsafe?.user || null
+      if (user) {
+        store.setUserData({
+          telegram_id: user.id || null,
+          full_name: [user.first_name, user.last_name].filter(Boolean).join(' '),
+          username: user.username || null,
+          phone_number: user.phone_number || null,
+        })
+      }
+
       // Apply Telegram theme
       const theme = tg.themeParams
       if (theme) {
@@ -28,13 +39,13 @@ export function useTelegram() {
           document.documentElement.style.setProperty(`--tg-theme-${key}`, theme[key])
         })
       }
-      
-      console.log('Telegram Mini App initialized', { startParam })
+
+      console.log('Telegram Mini App initialized', { startParam, user })
     } else {
       console.log('Running outside Telegram - using fallback mode')
     }
   })
-  
+
   const hapticFeedback = (style = 'light') => {
     try {
       if (isTelegramContext() && window.Telegram?.WebApp?.HapticFeedback) {
@@ -46,7 +57,7 @@ export function useTelegram() {
       console.warn('Haptic feedback failed:', error)
     }
   }
-  
+
   const showPopup = (message, title = 'Message') =>
     new Promise((resolve) => {
       try {
@@ -78,7 +89,6 @@ export function useTelegram() {
       if (!tg?.sendData) {
         return false
       }
-
       const serializedPayload =
         typeof payload === 'string' ? payload : JSON.stringify(payload)
       tg.sendData(serializedPayload)
@@ -99,11 +109,11 @@ export function useTelegram() {
       console.warn('Failed to close Telegram Mini App:', error)
     }
   }
-  
+
   return {
     hapticFeedback,
     showPopup,
     sendData,
-    closeMiniApp
+    closeMiniApp,
   }
 }

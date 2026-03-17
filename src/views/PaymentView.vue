@@ -133,11 +133,17 @@ const handlePayNow = async () => {
   hapticFeedback("medium")
 
   const payload = {
+    // ─── User data from Telegram ───
+    telegram_id: store.userData?.telegram_id || null,
+    full_name: store.userData?.full_name || null,
+    username: store.userData?.username || null,
+    phone_number: store.userData?.phone_number || null,
+    // ─── Game data ────────────────
     games: allGames.value,
     bank_name: selectedBank.value,
     amount: totalAmount.value,
-    startParam: store.startParam || null,
-    submittedAt: new Date().toISOString(),
+    start_param: store.startParam || null,
+    submitted_at: new Date().toISOString(),
   }
 
   const sent = sendData(payload)

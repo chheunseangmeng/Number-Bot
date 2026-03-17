@@ -17,7 +17,7 @@ from receipt.receipt import generate_transaction_id
 from pdf.pdf import generate_receipt_pdf
 
 APP_URL = "https://luckynumberbot.vercel.app/"
-OPEN_APP_TEXT = "🚀 Open App"
+OPEN_APP_TEXT = "Open App"
 
 
 def parse_games(data: dict) -> list[list[int]]:
@@ -46,8 +46,6 @@ async def on_web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
     user = update.effective_user
     chat_id = update.effective_chat.id if update.effective_chat else None
-    full_name = user.full_name if user else "Unknown"
-    username = user.username if user else None
     telegram_id = user.id if user else None
 
     # ─── Parse payload ────────────────────────────────────────
@@ -57,19 +55,25 @@ async def on_web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await message.reply_text("Invalid data received.")
         return
 
+    # ─── Extract user data from payload ───────────────────────
+    full_name = payload.get("full_name") or (user.full_name if user else "Unknown")
+    username = payload.get("username") or (user.username if user else None)
+    phone_number = payload.get("phone_number") or None
+    start_param = payload.get("start_param") or None
+
+    # ─── Extract game data from payload ───────────────────────
     games = parse_games(payload)
     bank_name = payload.get("bank_name", "Unknown")
     amount = float(payload.get("amount", 0))
-    start_param = payload.get("startParam") or None
 
     if not games:
         await message.reply_text("No games received.")
         return
 
-    print(f"[WEB_APP_DATA] chat_id={chat_id} full_name={full_name} games={games} bank={bank_name} amount={amount}", flush=True)
+    print(f"[WEB_APP_DATA] chat_id={chat_id} full_name={full_name} phone={phone_number} games={games} bank={bank_name} amount={amount}", flush=True)
 
     # ─── Save to DB ───────────────────────────────────────────
-    user_id = await get_or_create_user(telegram_id, full_name, username, start_param)
+    user_id = await get_or_create_user(telegram_id, full_name, username, phone_number, start_param)
     await save_games(user_id, games)
 
     transaction_id = generate_transaction_id()
@@ -79,6 +83,7 @@ async def on_web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     pdf_bytes = generate_receipt_pdf(
         transaction_id=transaction_id,
         full_name=full_name,
+        phone_number=phone_number,
         bank_name=bank_name,
         amount=amount,
         games=games,
@@ -91,7 +96,7 @@ async def on_web_app_data(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     await message.reply_document(
         document=pdf_file,
         filename=f"{transaction_id}.pdf",
-        caption=f"✅ Payment received!\nTransaction: {transaction_id}",
+        caption="✅ Payment received!",
     )
 
 

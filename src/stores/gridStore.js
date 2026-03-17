@@ -7,6 +7,7 @@ export const useGridStore = defineStore('grid', () => {
   const startParam = ref('')
   const editingIndex = ref(null)
   const _pendingSelection = ref([])
+  const userData = ref(null)  // ← stores telegram user data
   const MAX_SELECTION = 2
   const MAX_GAMES = 5
 
@@ -52,7 +53,7 @@ export const useGridStore = defineStore('grid', () => {
       } else {
         selectedNumbers.value = []
       }
-    } else if (games.value.length < MAX_GAMES - 1) {
+    } else if (games.value.length < MAX_GAMES) {
       games.value.push([...selectedNumbers.value])
       selectedNumbers.value = []
     }
@@ -64,7 +65,7 @@ export const useGridStore = defineStore('grid', () => {
         games.value[editingIndex.value] = [...selectedNumbers.value]
       }
     } else {
-      if (games.value.length < MAX_GAMES - 1) {
+      if (games.value.length < MAX_GAMES) {
         if (selectedNumbers.value.length === MAX_SELECTION) {
           games.value.push([...selectedNumbers.value])
         }
@@ -88,11 +89,16 @@ export const useGridStore = defineStore('grid', () => {
     startParam.value = param
   }
 
+  function setUserData(data) {
+    userData.value = data
+  }
+
   return {
     games,
     selectedNumbers,
     startParam,
     editingIndex,
+    userData,
     MAX_SELECTION,
     MAX_GAMES,
     selectedCount,
@@ -107,5 +113,6 @@ export const useGridStore = defineStore('grid', () => {
     editGame,
     clearAll,
     setStartParam,
+    setUserData,
   }
 })

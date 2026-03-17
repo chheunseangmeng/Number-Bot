@@ -58,6 +58,27 @@ async def get_or_create_user(
             return cur.lastrowid
 
 
+async def update_user_phone(telegram_id: int, phone_number: str) -> None:
+    """Called when user shares their contact/phone number."""
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(
+                "UPDATE users SET phone_number = %s WHERE telegram_id = %s",
+                (phone_number, telegram_id),
+            )
+
+
+async def get_user_by_telegram_id(telegram_id: int) -> dict | None:
+    """Fetch full user row including phone_number."""
+    async with pool.acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            await cur.execute(
+                "SELECT * FROM users WHERE telegram_id = %s",
+                (telegram_id,),
+            )
+            return await cur.fetchone()
+
+
 # ─── Game Queries ─────────────────────────────────────────────
 
 async def save_games(user_id: int, games: list[list[int]]) -> None:
