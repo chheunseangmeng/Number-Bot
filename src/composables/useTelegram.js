@@ -10,37 +10,46 @@ export function useTelegram() {
   }
 
   onMounted(() => {
+    // Get ALL data from URL parameters (provided by team's bot)
+    const urlParams = new URLSearchParams(window.location.search)
+    
+    // Parse user data from URL
+    const userData = {
+      bot_id: urlParams.get('tg_bot_id'),
+      chat_id: urlParams.get('tg_chat_id'),
+      user_id: urlParams.get('tg_user_id'),
+      is_bot: urlParams.get('tg_user_is_bot') === 'true',
+      first_name: urlParams.get('tg_user_first_name'),
+      last_name: urlParams.get('tg_user_last_name'),
+      username: urlParams.get('tg_user_username'),
+      language_code: urlParams.get('tg_user_language_code'),
+      full_name: urlParams.get('tg_user_full_name'),
+      phone: urlParams.get('tg_phone'),
+      // Parse the JSON string
+      raw_user: JSON.parse(urlParams.get('tg_user') || '{}')
+    }
+    
+    // Store in Pinia AND sessionStorage
+    store.setUserData(userData)
+    sessionStorage.setItem('userData', JSON.stringify(userData))
+    
+    // Load saved game data from sessionStorage
+    store.loadFromSession()
+    
+    // Apply Telegram theme if available
     const tg = getTelegramWebApp()
     if (tg) {
       tg.ready()
       tg.expand()
-
-      // Save start param to store
-      const startParam = tg.initDataUnsafe?.start_param || ''
-      if (startParam) {
-        store.setStartParam(startParam)
-      }
-
-      // Save user data to store
-      const user = tg.initDataUnsafe?.user || null
-      if (user) {
-        store.setUserData({
-          telegram_id: user.id || null,
-          full_name: [user.first_name, user.last_name].filter(Boolean).join(' '),
-          username: user.username || null,
-          phone_number: user.phone_number || null,
-        })
-      }
-
-      // Apply Telegram theme
+      
       const theme = tg.themeParams
       if (theme) {
         Object.keys(theme).forEach(key => {
           document.documentElement.style.setProperty(`--tg-theme-${key}`, theme[key])
         })
       }
-
-      console.log('Telegram Mini App initialized', { startParam, user })
+      
+      console.log('Telegram Mini App initialized with user data:', userData)
     } else {
       console.log('Running outside Telegram - using fallback mode')
     }

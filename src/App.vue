@@ -1,8 +1,12 @@
 <template>
-  <RouterView /> 
+  <router-view />
 </template>
 
 <script setup>
-import { RouterView } from 'vue-router';
-</script>
+import { onMounted } from 'vue'
+import { useTelegram } from './composables/useTelegram'
 
+onMounted(() => {
+  const { } = useTelegram()
+})
+</script>

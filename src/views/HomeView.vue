@@ -1,7 +1,7 @@
 <template>
   <div class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)]">
-    <!-- Header -->
-    <header class="text-center flex-none">
+    <!-- HEADER -->
+    <header class="text-center flex-none pt-2">
       <h1 class="text-md font-bold text-gray-600 italic">
         Select your numbers
       </h1>
@@ -13,18 +13,20 @@
       </div>
     </header>
 
+    <!-- MAIN -->
     <div class="flex-1 flex flex-col items-center p-2 min-h-0 w-full">
+      <!-- Grid -->
       <NumberGrid />
 
       <hr class="w-full max-w-md my-2" />
 
-      <!-- Games List -->
+      <!-- GAMES LIST -->
       <div
         v-if="store.games.length > 0 || store.selectedCount > 0"
         v-show="isShowGames"
         class="w-full max-w-md flex-none mb-2"
       >
-        <!-- Saved games -->
+        <!-- Saved -->
         <div
           v-for="(game, index) in store.games"
           :key="index"
@@ -46,6 +48,7 @@
           >
             Game {{ index + 1 }}
           </span>
+
           <span
             class="text-sm font-bold"
             :class="
@@ -58,18 +61,21 @@
               {{ selectedNumbers[0] !== "?" ? selectedNumbers[0] : "..." }} ,
               {{ selectedNumbers[1] !== "?" ? selectedNumbers[1] : "..." }}
             </template>
-            <template v-else> {{ game[0] }} , {{ game[1] }} </template>
+            <template v-else>
+              {{ game[0] }} , {{ game[1] }}
+            </template>
           </span>
         </div>
 
-        <!-- Current new game row (only when not editing) -->
+        <!-- Current row -->
         <div
-          v-if="store.editingIndex === null"
+          v-if="store.editingIndex === null && store.gamesCount < store.MAX_GAMES"
           class="flex items-center justify-between px-3 py-1 mb-1 rounded-md bg-[var(--tg-theme-secondary-bg-color)]"
         >
-          <span class="text-sm text-[var(--tg-theme-hint-color)]"
-            >Game {{ store.gamesCount + 1 }}</span
-          >
+          <span class="text-sm text-[var(--tg-theme-hint-color)]">
+            Game {{ store.gamesCount + 1 }}
+          </span>
+
           <span class="text-sm font-bold text-[var(--tg-theme-text-color)]">
             {{ selectedNumbers[0] !== "?" ? selectedNumbers[0] : "..." }} ,
             {{ selectedNumbers[1] !== "?" ? selectedNumbers[1] : "..." }}
@@ -77,10 +83,11 @@
         </div>
       </div>
 
-      <!-- Selection Boxes -->
+      <!-- SELECTION BOXES -->
       <div class="flex gap-2 w-full max-w-md flex-none">
+        <!-- Box 1 -->
         <div
-          class="flex-1 h-12 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-200 relative"
+          class="flex-1 h-12 rounded-md flex items-center justify-center text-3xl font-bold relative"
           :class="
             selectedNumbers[0] !== '?'
               ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
@@ -92,12 +99,14 @@
             v-if="selectedNumbers[0] !== '?'"
             class="absolute top-0 right-1 text-sm cursor-pointer"
             @click="store.deselectNumber(store.selectedNumbers[0])"
-            >❌</span
           >
+            ❌
+          </span>
         </div>
 
+        <!-- Box 2 -->
         <div
-          class="flex-1 h-12 rounded-md flex items-center justify-center text-3xl font-bold transition-all duration-200 relative"
+          class="flex-1 h-12 rounded-md flex items-center justify-center text-3xl font-bold relative"
           :class="
             selectedNumbers[1] !== '?'
               ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
@@ -109,28 +118,43 @@
             v-if="selectedNumbers[1] !== '?'"
             class="absolute top-0 right-1 text-sm cursor-pointer"
             @click="store.deselectNumber(store.selectedNumbers[1])"
-            >❌</span
           >
+            ❌
+          </span>
         </div>
       </div>
 
-      <!-- Show or hide game lists -->
+      <!-- TOGGLE -->
       <p
         @click="isShowGames = !isShowGames"
-        class="text-center text-sm text-[var(--tg-theme-hint-color)] flex-none mt-1 underline cursor-pointer"
+        class="text-center text-sm text-[var(--tg-theme-hint-color)] mt-1 underline cursor-pointer"
       >
-        {{ isShowGames ? "Hide" : "Show" }} game list ({{
-          store.gamesCount + (store.editingIndex === null ? 1 : 0)
+        {{ isShowGames ? "Hide" : "Show" }} game list (
+        {{
+          store.gamesCount +
+          (store.editingIndex === null && store.gamesCount < store.MAX_GAMES ? 1 : 0)
         }}/{{ store.MAX_GAMES }})
       </p>
 
-      <!-- Action Buttons -->
+      <!-- ACTION BUTTONS -->
       <div class="w-full max-w-md flex-none mt-1 mb-1">
+        <!-- Not ready -->
         <NextButton
           v-if="!canSubmit"
           :disabled="true"
           text="Select 2 numbers"
         />
+
+        <!-- MAX reached → FULL NEXT -->
+        <NextButton
+          v-else-if="store.gamesCount === store.MAX_GAMES && store.editingIndex === null"
+          text="Next"
+          variant="primary"
+          class="w-full"
+          @click="handleSubmit"
+        />
+
+        <!-- Normal -->
         <div v-else class="flex gap-2">
           <NextButton
             v-if="canSave"
@@ -139,6 +163,7 @@
             class="flex-1"
             @click="handleSaveGame"
           />
+
           <NextButton
             v-if="canAddGame"
             text="Add Game"
@@ -146,6 +171,7 @@
             class="flex-1"
             @click="handleSaveGame"
           />
+
           <NextButton
             text="Next"
             variant="primary"

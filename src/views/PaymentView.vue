@@ -1,49 +1,51 @@
 <template>
-  <div class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)]">
+  <div class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)] overflow-hidden">
     <!-- Header -->
-    <header class="text-center px-4 pt-4 flex-none">
+    <header class="text-center pt-3 pb-1 flex-none">
       <h1 class="text-md font-bold text-gray-600 italic">Payment</h1>
-      <p class="text-xs text-[var(--tg-theme-hint-color)] mt-1">
-        Select your bank and complete payment
+      <p class="text-xs text-[var(--tg-theme-hint-color)]">
+        Select your bank
       </p>
     </header>
 
-    <div class="flex-1 flex flex-col items-center p-4 min-h-0 w-full overflow-y-auto">
-
+    <div class="flex-1 flex flex-col items-center px-3 overflow-y-auto">
       <!-- Order Summary -->
-      <div class="w-full max-w-md bg-[var(--tg-theme-secondary-bg-color)] rounded-xl p-4 mb-4 flex-none">
-        <h2 class="text-sm font-semibold text-[var(--tg-theme-hint-color)] mb-2">
+      <div class="w-full max-w-xs bg-[var(--tg-theme-secondary-bg-color)] rounded-xl p-3 mb-3 flex-none">
+        <h2 class="text-xs font-semibold text-[var(--tg-theme-hint-color)] mb-1">
           Order Summary
         </h2>
+        
+        <!-- Only shows saved games, no extra game -->
         <div
           v-for="(game, index) in allGames"
           :key="index"
           class="flex justify-between items-center py-1"
         >
-          <span class="text-sm text-[var(--tg-theme-hint-color)]">Game {{ index + 1 }}</span>
-          <span class="text-sm font-bold text-[var(--tg-theme-text-color)]">
+          <span class="text-xs text-[var(--tg-theme-hint-color)]">Game {{ index + 1 }}</span>
+          <span class="text-xs font-bold text-[var(--tg-theme-text-color)]">
             {{ game[0] }} , {{ game[1] }}
           </span>
         </div>
-        <hr class="my-2 border-[var(--tg-theme-hint-color)] opacity-20" />
+        
+        <hr class="my-1 border-[var(--tg-theme-hint-color)] opacity-20" />
         <div class="flex justify-between items-center">
-          <span class="text-sm font-semibold text-[var(--tg-theme-hint-color)]">Total</span>
-          <span class="text-lg font-bold text-[var(--tg-theme-text-color)]">
+          <span class="text-xs font-semibold text-[var(--tg-theme-hint-color)]">Total</span>
+          <span class="text-base font-bold text-[var(--tg-theme-text-color)]">
             ${{ totalAmount.toFixed(2) }}
           </span>
         </div>
       </div>
 
       <!-- Bank Selection -->
-      <div class="w-full max-w-md flex-none">
-        <h2 class="text-sm font-semibold text-[var(--tg-theme-hint-color)] mb-2">
+      <div class="w-full max-w-xs flex-none">
+        <h2 class="text-xs font-semibold text-[var(--tg-theme-hint-color)] mb-2">
           Select Bank
         </h2>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-2">
           <button
             v-for="bank in banks"
             :key="bank.name"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all duration-150 active:scale-95 focus:outline-none"
+            class="flex items-center gap-2 px-2 py-2 rounded-lg border-2 transition-all duration-150 active:scale-95 focus:outline-none"
             :class="
               selectedBank === bank.name
                 ? 'border-[var(--tg-theme-button-color)]'
@@ -51,15 +53,13 @@
             "
             @click="selectedBank = bank.name"
           >
-            <!-- Bank Logo -->
             <img
               :src="bank.logo"
               :alt="bank.name"
-              class="w-9 h-9 rounded-lg object-contain flex-shrink-0"
+              class="w-7 h-7 rounded-md object-contain flex-shrink-0"
             />
-
             <span
-              class="text-sm font-semibold"
+              class="text-xs font-semibold"
               :class="
                 selectedBank === bank.name
                   ? 'text-[var(--tg-theme-button-color)]'
@@ -68,11 +68,9 @@
             >
               {{ bank.name }}
             </span>
-
-            <!-- Checkmark -->
             <span
               v-if="selectedBank === bank.name"
-              class="ml-auto text-[var(--tg-theme-button-color)] text-lg"
+              class="ml-auto text-[var(--tg-theme-button-color)] text-sm"
             >✓</span>
           </button>
         </div>
@@ -80,9 +78,9 @@
     </div>
 
     <!-- Pay Now Button -->
-    <div class="w-full max-w-md mx-auto px-4 pb-4 flex-none">
+    <div class="w-full max-w-xs mx-auto px-3 pb-3 flex-none">
       <button
-        class="w-full py-3 px-6 rounded-xl text-lg font-semibold transition-all active:scale-95 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed"
+        class="w-full py-2 px-4 rounded-lg text-sm font-semibold transition-all active:scale-95 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed"
         :class="
           selectedBank
             ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
@@ -114,7 +112,7 @@ const banks = [
   { name: "ABA",      logo: "/banks/aba.png" },
   { name: "ACLEDA",   logo: "/banks/acleda.png" },
   { name: "JTrust",   logo: "/banks/jtrust.png" },
-  { name: "Wingbank", logo: "/banks/wing.png" },
+  { name: "Wing",     logo: "/banks/wing.png" },
 ]
 
 const allGames = computed(() => {
@@ -123,7 +121,12 @@ const allGames = computed(() => {
       i === store.editingIndex ? [...store.selectedNumbers] : g
     )
   }
-  return [...store.games, [...store.selectedNumbers]]
+
+  if (store.selectedCount === 2) {
+    return [...store.games, [...store.selectedNumbers]]
+  }
+
+  return store.games
 })
 
 const totalAmount = computed(() => allGames.value.length * PRICE_PER_GAME)
@@ -132,17 +135,22 @@ const handlePayNow = async () => {
   if (!selectedBank.value) return
   hapticFeedback("medium")
 
+  const userData = store.userData || JSON.parse(sessionStorage.getItem('userData') || '{}')
+  
+  const transactionId = 'TXN' + Date.now() + Math.random().toString(36).substring(2, 6).toUpperCase()
+  
   const payload = {
-    // ─── User data from Telegram ───
-    telegram_id: store.userData?.telegram_id || null,
-    full_name: store.userData?.full_name || null,
-    username: store.userData?.username || null,
-    phone_number: store.userData?.phone_number || null,
-    // ─── Game data ────────────────
+    type: 'payment',
+    transaction_id: transactionId,
+    chat_id: userData.chat_id,
+    user_id: userData.user_id,
+    full_name: userData.full_name,
+    username: userData.username,
+    phone: userData.phone || 'N/A',
     games: allGames.value,
     bank_name: selectedBank.value,
     amount: totalAmount.value,
-    start_param: store.startParam || null,
+    game_count: allGames.value.length,
     submitted_at: new Date().toISOString(),
   }
 
@@ -150,7 +158,7 @@ const handlePayNow = async () => {
   if (sent) {
     await showPopup("Payment submitted successfully!", "Success")
     store.clearAll()
-    router.push("/")
+    router.push("/")  // ← back to home, no receipt page
   } else {
     await showPopup("Could not send payment. Please try again.", "Error")
   }
