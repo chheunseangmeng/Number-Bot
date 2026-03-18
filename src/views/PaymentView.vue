@@ -146,19 +146,23 @@ const handlePayNow = async () => {
     user_id: userData.user_id,
     full_name: userData.full_name,
     username: userData.username,
-    phone: userData.phone || 'N/A',
-    games: allGames.value,
+    games: allGames.value,  // Only saved games
     bank_name: selectedBank.value,
     amount: totalAmount.value,
     game_count: allGames.value.length,
     submitted_at: new Date().toISOString(),
   }
 
+  sessionStorage.setItem('lastTransaction', JSON.stringify({
+    ...payload,
+    receipt_generated: true
+  }))
+
   const sent = sendData(payload)
   if (sent) {
     await showPopup("Payment submitted successfully!", "Success")
     store.clearAll()
-    router.push("/")  // ← back to home, no receipt page
+    router.push("/receipt")
   } else {
     await showPopup("Could not send payment. Please try again.", "Error")
   }
