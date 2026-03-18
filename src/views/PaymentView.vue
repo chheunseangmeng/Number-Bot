@@ -77,9 +77,9 @@
     </div>
 
     <!-- Pay Now Button -->
-    <div class="w-full max-w-xs mx-auto px-3 pb-3 pt-3 flex-none mb-10">
+    <div class="w-full max-w-xs mx-auto px-3 pb-3 pt-3 flex-none mb-6">
       <button
-        class="w-full py-4 px-4 rounded-lg text-sm font-semibold transition-all active:scale-95 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed"
+        class="w-full py-3 px-4 rounded-lg text-sm font-semibold transition-all active:scale-95 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed"
         :class="
           selectedBank
             ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
@@ -102,7 +102,7 @@ import { useTelegram } from "../composables/useTelegram"
 
 const router = useRouter()
 const store = useGridStore()
-const { hapticFeedback, sendData, showPopup } = useTelegram()
+const { hapticFeedback } = useTelegram()
 
 const selectedBank = ref("")
 const PRICE_PER_GAME = 1.0
@@ -128,7 +128,7 @@ const allGames = computed(() => {
 
 const totalAmount = computed(() => allGames.value.length * PRICE_PER_GAME)
 
-const handlePayNow = async () => {
+const handlePayNow = () => {
   if (!selectedBank.value) return
   hapticFeedback("medium")
 
@@ -152,10 +152,9 @@ const handlePayNow = async () => {
     submitted_at:  new Date().toISOString(),
   }
 
-  // ✅ Save first, redirect first, then send to bot
+  // ✅ Save to sessionStorage first then redirect — NO sendData here
   sessionStorage.setItem('lastTransaction', JSON.stringify(payload))
   store.clearAll()
   router.push("/receipt")
-  sendData(payload)
 }
 </script>

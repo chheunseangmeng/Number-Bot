@@ -62,9 +62,9 @@
           class="w-full py-2 px-4 rounded-lg text-sm font-semibold
                  bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]
                  active:scale-95 transition-all"
-          @click="handleBack"
+          @click="handleClose"
         >
-          Back to Home
+          Close
         </button>
       </div>
     </div>
@@ -73,11 +73,9 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue"
-import { useRouter } from "vue-router"
 import { useTelegram } from "../composables/useTelegram"
 
-const router = useRouter()
-const { hapticFeedback } = useTelegram()
+const { hapticFeedback, sendData, closeMiniApp } = useTelegram()
 
 const transactionId = ref('')
 const userFullName = ref('')
@@ -112,8 +110,10 @@ const formattedDate = computed(() => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 })
 
-const handleBack = () => {
+const handleClose = () => {
   hapticFeedback('light')
-  router.push('/')
+  const lastTxn = JSON.parse(sessionStorage.getItem('lastTransaction') || '{}')
+  sendData(lastTxn)  
+  closeMiniApp()    
 }
 </script>
