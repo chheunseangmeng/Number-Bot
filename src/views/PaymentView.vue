@@ -14,8 +14,7 @@
         <h2 class="text-xs font-semibold text-[var(--tg-theme-hint-color)] mb-1">
           Order Summary
         </h2>
-        
-        <!-- Only shows saved games, no extra game -->
+
         <div
           v-for="(game, index) in allGames"
           :key="index"
@@ -26,7 +25,7 @@
             {{ game[0] }} , {{ game[1] }}
           </span>
         </div>
-        
+
         <hr class="my-1 border-[var(--tg-theme-hint-color)] opacity-20" />
         <div class="flex justify-between items-center">
           <span class="text-xs font-semibold text-[var(--tg-theme-hint-color)]">Total</span>
@@ -109,10 +108,10 @@ const selectedBank = ref("")
 const PRICE_PER_GAME = 1.0
 
 const banks = [
-  { name: "ABA",      logo: "/banks/aba.png" },
-  { name: "ACLEDA",   logo: "/banks/acleda.png" },
-  { name: "JTrust",   logo: "/banks/jtrust.png" },
-  { name: "Wing",     logo: "/banks/wing.png" },
+  { name: "ABA",    logo: "/banks/aba.png" },
+  { name: "ACLEDA", logo: "/banks/acleda.png" },
+  { name: "JTrust", logo: "/banks/jtrust.png" },
+  { name: "Wing",   logo: "/banks/wing.png" },
 ]
 
 const allGames = computed(() => {
@@ -121,11 +120,9 @@ const allGames = computed(() => {
       i === store.editingIndex ? [...store.selectedNumbers] : g
     )
   }
-
   if (store.selectedCount === 2) {
     return [...store.games, [...store.selectedNumbers]]
   }
-
   return store.games
 })
 
@@ -136,27 +133,28 @@ const handlePayNow = async () => {
   hapticFeedback("medium")
 
   const userData = store.userData || JSON.parse(sessionStorage.getItem('userData') || '{}')
-  
-  const transactionId = 'TXN' + Date.now() + Math.random().toString(36).substring(2, 6).toUpperCase()
-  
+
   const payload = {
     type: 'payment',
-    transaction_id: transactionId,
-    chat_id: userData.chat_id,
-    user_id: userData.user_id,
-    full_name: userData.full_name,
-    username: userData.username,
-    games: allGames.value,  // Only saved games
-    bank_name: selectedBank.value,
-    amount: totalAmount.value,
-    game_count: allGames.value.length,
-    submitted_at: new Date().toISOString(),
-  }
+    transaction_id: 'TXN' + Date.now() + Math.random().toString(36).substring(2, 6).toUpperCase(),
+    bot_id:        userData.bot_id,
+    chat_id:       userData.chat_id,
+    user_id:       userData.user_id,
+    first_name:    userData.first_name,
+    last_name:     userData.last_name,
+    full_name:     userData.full_name,
+    username:      userData.username,
+    language_code: userData.language_code,
+    phone:         userData.phone || 'N/A',
+    games:         allGames.value,
+    bank_name:     selectedBank.value,
+    amount:        totalAmount.value,
+    game_count:    allGames.value.length,
+    submitted_at:  new Date().toISOString(),
+}
 
-  sessionStorage.setItem('lastTransaction', JSON.stringify({
-    ...payload,
-    receipt_generated: true
-  }))
+  // Save to sessionStorage so ReceiptView can read it
+  sessionStorage.setItem('lastTransaction', JSON.stringify(payload))
 
   const sent = sendData(payload)
   if (sent) {

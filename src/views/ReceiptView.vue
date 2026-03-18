@@ -1,11 +1,7 @@
 <template>
   <div class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)] overflow-hidden">
-    <!-- Header -->
-    <header class="text-center pt-3 pb-1 flex-none">
-      <h1 class="text-md font-bold text-gray-600 italic">Payment Receipt</h1>
-    </header>
 
-    <div class="flex-1 flex flex-col items-center px-3 overflow-y-auto">
+    <div class="flex-1 flex flex-col items-center px-3 mt-10 overflow-y-auto">
       <!-- Receipt Card -->
       <div class="w-full max-w-xs bg-white rounded-xl shadow-lg overflow-hidden">
         <div class="bg-[#1e88e5] text-white p-3 text-center">
@@ -61,20 +57,10 @@
         </div>
       </div>
 
-      <div class="w-full max-w-xs mt-3 space-y-2">
+      <div class="w-full max-w-xs mt-3">
         <button
           class="w-full py-2 px-4 rounded-lg text-sm font-semibold
                  bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]
-                 active:scale-95 transition-all"
-          @click="sendReceiptToBot"
-        >
-          Send Receipt to Bot
-        </button>
-
-        <button
-          class="w-full py-2 px-4 rounded-lg text-sm font-semibold
-                 border border-[var(--tg-theme-button-color)]
-                 text-[var(--tg-theme-button-color)]
                  active:scale-95 transition-all"
           @click="handleBack"
         >
@@ -88,12 +74,10 @@
 <script setup>
 import { computed, onMounted, ref } from "vue"
 import { useRouter } from "vue-router"
-import { useGridStore } from "../stores/gridStore"
 import { useTelegram } from "../composables/useTelegram"
 
 const router = useRouter()
-const store = useGridStore()
-const { hapticFeedback, sendData, showPopup } = useTelegram()
+const { hapticFeedback } = useTelegram()
 
 const transactionId = ref('')
 const userFullName = ref('')
@@ -101,61 +85,32 @@ const phone = ref('')
 const bankName = ref('')
 const games = ref([])
 const amount = ref(0)
+const submittedAt = ref('')
 
 onMounted(() => {
   const lastTxn = sessionStorage.getItem('lastTransaction')
   if (lastTxn) {
     const data = JSON.parse(lastTxn)
-    transactionId.value = data.transaction_id || 'TXN' + Date.now()
+    transactionId.value = data.transaction_id || 'N/A'
     games.value = data.games || []
     amount.value = data.amount || 0
-    bankName.value = data.bank_name || 'ABA'
-  }
-
-  const userData = sessionStorage.getItem('userData')
-  if (userData) {
-    const data = JSON.parse(userData)
+    bankName.value = data.bank_name || 'N/A'
     userFullName.value = data.full_name || 'Customer'
     phone.value = data.phone || 'N/A'
+    submittedAt.value = data.submitted_at || new Date().toISOString()
   }
 })
 
-// ✅ UPDATED DATE FORMAT HERE
 const formattedDate = computed(() => {
-  const now = new Date()
-
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-
-  const hours = String(now.getHours()).padStart(2, '0')
-  const minutes = String(now.getMinutes()).padStart(2, '0')
-  const seconds = String(now.getSeconds()).padStart(2, '0')
-
+  const date = new Date(submittedAt.value || new Date())
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 })
-
-const sendReceiptToBot = () => {
-  hapticFeedback('medium')
-
-  const receiptData = {
-    type: 'receipt',
-    transaction_id: transactionId.value,
-    user: {
-      name: userFullName.value,
-      phone: phone.value,
-    },
-    games: games.value,
-    amount: amount.value,
-    bank: bankName.value,
-    date: new Date().toISOString()
-  }
-
-  if (sendData(receiptData)) {
-    showPopup('Receipt sent to bot!', 'Success')
-    setTimeout(() => router.push('/'), 1500)
-  }
-}
 
 const handleBack = () => {
   hapticFeedback('light')

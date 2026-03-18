@@ -10,7 +10,7 @@ export function useTelegram() {
   }
 
   onMounted(() => {
-    // Get ALL data from URL parameters (provided by team's bot)
+    // Get ALL data from URL parameters 
     const urlParams = new URLSearchParams(window.location.search)
     
     // Parse user data from URL
@@ -29,7 +29,7 @@ export function useTelegram() {
       raw_user: JSON.parse(urlParams.get('tg_user') || '{}')
     }
     
-    // Store in Pinia AND sessionStorage
+
     store.setUserData(userData)
     sessionStorage.setItem('userData', JSON.stringify(userData))
     
