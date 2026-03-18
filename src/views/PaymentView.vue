@@ -77,9 +77,9 @@
     </div>
 
     <!-- Pay Now Button -->
-    <div class="w-full max-w-xs mx-auto px-3 pb-3 flex-none">
+    <div class="w-full max-w-xs mx-auto px-3 pb-3 pt-3 flex-none mb-10">
       <button
-        class="w-full py-2 px-4 rounded-lg text-sm font-semibold transition-all active:scale-95 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed"
+        class="w-full py-4 px-4 rounded-lg text-sm font-semibold transition-all active:scale-95 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed"
         :class="
           selectedBank
             ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
@@ -137,7 +137,6 @@ const handlePayNow = async () => {
   const payload = {
     type: 'payment',
     transaction_id: 'TXN' + Date.now() + Math.random().toString(36).substring(2, 6).toUpperCase(),
-    bot_id:        userData.bot_id,
     chat_id:       userData.chat_id,
     user_id:       userData.user_id,
     first_name:    userData.first_name,
@@ -151,18 +150,12 @@ const handlePayNow = async () => {
     amount:        totalAmount.value,
     game_count:    allGames.value.length,
     submitted_at:  new Date().toISOString(),
-}
-
-  // Save to sessionStorage so ReceiptView can read it
-  sessionStorage.setItem('lastTransaction', JSON.stringify(payload))
-
-  const sent = sendData(payload)
-  if (sent) {
-    await showPopup("Payment submitted successfully!", "Success")
-    store.clearAll()
-    router.push("/receipt")
-  } else {
-    await showPopup("Could not send payment. Please try again.", "Error")
   }
+
+  // ✅ Save first, redirect first, then send to bot
+  sessionStorage.setItem('lastTransaction', JSON.stringify(payload))
+  store.clearAll()
+  router.push("/receipt")
+  sendData(payload)
 }
 </script>
