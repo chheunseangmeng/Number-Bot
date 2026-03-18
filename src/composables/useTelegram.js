@@ -10,46 +10,50 @@ export function useTelegram() {
   }
 
   onMounted(() => {
-    // Get ALL data from URL parameters 
     const urlParams = new URLSearchParams(window.location.search)
-    
-    // Parse user data from URL
-    const userData = {
-      bot_id: urlParams.get('tg_bot_id'),
-      chat_id: urlParams.get('tg_chat_id'),
-      user_id: urlParams.get('tg_user_id'),
-      is_bot: urlParams.get('tg_user_is_bot') === 'true',
-      first_name: urlParams.get('tg_user_first_name'),
-      last_name: urlParams.get('tg_user_last_name'),
-      username: urlParams.get('tg_user_username'),
-      language_code: urlParams.get('tg_user_language_code'),
-      full_name: urlParams.get('tg_user_full_name'),
-      phone: urlParams.get('tg_phone'),
-      // Parse the JSON string
-      raw_user: JSON.parse(urlParams.get('tg_user') || '{}')
-    }
-    
 
-    store.setUserData(userData)
-    sessionStorage.setItem('userData', JSON.stringify(userData))
-    
+    //Only update userData if URL params exist
+    const fullName = urlParams.get('tg_user_full_name')
+    if (fullName) {
+      const userData = {
+        bot_id:        urlParams.get('tg_bot_id'),
+        chat_id:       urlParams.get('tg_chat_id'),
+        user_id:       urlParams.get('tg_user_id'),
+        is_bot:        urlParams.get('tg_user_is_bot') === 'true',
+        first_name:    urlParams.get('tg_user_first_name'),
+        last_name:     urlParams.get('tg_user_last_name'),
+        username:      urlParams.get('tg_user_username'),
+        language_code: urlParams.get('tg_user_language_code'),
+        full_name:     urlParams.get('tg_user_full_name'),
+        phone:         urlParams.get('tg_phone'),
+        raw_user:      JSON.parse(urlParams.get('tg_user') || '{}')
+      }
+      store.setUserData(userData)
+      sessionStorage.setItem('userData', JSON.stringify(userData))
+      console.log('Telegram Mini App initialized with user data:', userData)
+    } else {
+      const savedUserData = sessionStorage.getItem('userData')
+      if (savedUserData) {
+        store.setUserData(JSON.parse(savedUserData))
+        console.log('Loaded user data from sessionStorage')
+      }
+    }
+
     // Load saved game data from sessionStorage
     store.loadFromSession()
-    
+
     // Apply Telegram theme if available
     const tg = getTelegramWebApp()
     if (tg) {
       tg.ready()
       tg.expand()
-      
+
       const theme = tg.themeParams
       if (theme) {
         Object.keys(theme).forEach(key => {
           document.documentElement.style.setProperty(`--tg-theme-${key}`, theme[key])
         })
       }
-      
-      console.log('Telegram Mini App initialized with user data:', userData)
     } else {
       console.log('Running outside Telegram - using fallback mode')
     }
