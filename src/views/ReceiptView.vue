@@ -21,6 +21,12 @@
             <p class="font-mono text-xs font-bold">{{ transactionId }}</p>
           </div>
 
+          <!-- Reference Number -->
+          <div class="text-center mb-3">
+            <span class="text-[9px] text-gray-400">Reference Number</span>
+            <p class="font-mono text-xs font-bold">{{ referenceNumber }}</p>
+          </div>
+
           <!-- User Info -->
           <div class="bg-gray-50 p-3 rounded-lg mb-3 space-y-1">
             <div class="flex justify-between text-xs">
@@ -62,7 +68,7 @@
               <span class="font-bold text-[#1e88e5] text-xs">Total</span>
               <span class="font-bold text-base text-[#1e88e5]">${{ amount }}</span>
             </div>
-            <p class="text-center text-[10px] text-gray-500 mt-1">Thank you for your purchase!</p>
+            <p class="text-center text-[10px] text-gray-500 mt-1 py-6 italic">Thank you for your purchase!</p>
           </div>
         </div>
       </div>
@@ -92,17 +98,6 @@
       </div>
 
     </div>
-
-    <!-- iOS Image Overlay (long-press to save) -->
-    <div
-      v-if="showOverlay"
-      class="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center"
-      @click="showOverlay = false"
-    >
-      <p class="text-white text-xs mb-3 opacity-70">Long press image to save • Tap anywhere to close</p>
-      <img :src="overlayImage" class="w-full max-w-sm" />
-    </div>
-
   </div>
 </template>
 
@@ -114,10 +109,9 @@ import html2canvas from "html2canvas"
 const { hapticFeedback, sendData, closeMiniApp } = useTelegram()
 
 const receiptRef = ref(null)
-const showOverlay = ref(false)
-const overlayImage = ref('')
 
 const transactionId = ref('')
+const referenceNumber = ref('')
 const userFullName = ref('')
 const phone = ref('')
 const bankName = ref('')
@@ -125,7 +119,7 @@ const games = ref([])
 const amount = ref(0)
 const submittedAt = ref('')
 
-// Detect iOS
+// Detect iOS only
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 
 onMounted(() => {
@@ -133,6 +127,7 @@ onMounted(() => {
   if (lastTxn) {
     const data = JSON.parse(lastTxn)
     transactionId.value = data.transaction_id || 'N/A'
+    referenceNumber.value = 'REF' + Date.now().toString().slice(-8)
     games.value = data.games || []
     amount.value = data.amount || 0
     bankName.value = data.bank_name || 'N/A'
@@ -167,12 +162,14 @@ const saveImage = async () => {
     canvas.toBlob(async (blob) => {
       const file = new File([blob], `receipt_${transactionId.value}.png`, { type: 'image/png' })
 
-      if (navigator.share && navigator.canShare({ files: [file] })) {
+      if (isIOS && navigator.share && navigator.canShare({ files: [file] })) {
+        // iOS only → native share
         await navigator.share({
           files: [file],
           title: 'Payment Receipt',
         })
       } else {
+        // Android + Desktop → direct download
         const link = document.createElement("a")
         link.href = URL.createObjectURL(blob)
         link.download = `receipt_${transactionId.value}.png`
@@ -181,8 +178,8 @@ const saveImage = async () => {
     }, 'image/png')
 
   } catch (error) {
-    console.error('Failed to share receipt:', error)
-    alert('Could not share image. Please take a screenshot instead.')
+    console.error('Failed to save receipt:', error)
+    alert('Could not save image. Please take a screenshot instead.')
   }
 }
 
