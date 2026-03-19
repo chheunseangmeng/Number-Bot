@@ -162,29 +162,27 @@ const saveImage = async () => {
       scale: 2,
       useCORS: true,
       backgroundColor: '#ffffff',
-      onclone: (clonedDoc) => {
-        const el = clonedDoc.querySelector('[data-receipt]')
-        if (el) {
-          el.style.backgroundColor = '#ffffff'
-        }
-      }
     })
 
-    const image = canvas.toDataURL("image/png")
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], `receipt_${transactionId.value}.png`, { type: 'image/png' })
 
-    if (isIOS) {
-      overlayImage.value = image
-      showOverlay.value = true
-    } else {
-      // Direct download for Android / Desktop
-      const link = document.createElement("a")
-      link.href = image
-      link.download = `receipt_${transactionId.value}.png`
-      link.click()
-    }
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Payment Receipt',
+        })
+      } else {
+        const link = document.createElement("a")
+        link.href = URL.createObjectURL(blob)
+        link.download = `receipt_${transactionId.value}.png`
+        link.click()
+      }
+    }, 'image/png')
+
   } catch (error) {
-    console.error('Failed to capture receipt:', error)
-    alert('Could not save image. Please take a screenshot instead.')
+    console.error('Failed to share receipt:', error)
+    alert('Could not share image. Please take a screenshot instead.')
   }
 }
 
