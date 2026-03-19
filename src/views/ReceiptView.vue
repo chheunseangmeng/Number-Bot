@@ -68,7 +68,7 @@
               <span class="font-bold text-[#1e88e5] text-xs">Total</span>
               <span class="font-bold text-base text-[#1e88e5]">${{ amount }}</span>
             </div>
-            <p class="text-center text-[10px] text-gray-500 mt-1 py-6 italic">Thank you for your purchase!</p>
+            <p class="text-center text-[10px] text-gray-500 mt-1 italic">Thank you for your purchase!</p>
           </div>
         </div>
       </div>
