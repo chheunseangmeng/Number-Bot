@@ -15,20 +15,17 @@
 
         <!-- Body -->
         <div class="p-4">
-          <!-- Transaction ID -->
-          <div class="text-center mb-3">
-            <span class="text-[9px] text-gray-400">Transaction ID</span>
-            <p class="font-mono text-xs font-bold">{{ transactionId }}</p>
-          </div>
 
-          <!-- Reference Number -->
-          <div class="text-center mb-3">
-            <span class="text-[9px] text-gray-400">Reference Number</span>
-            <p class="font-mono text-xs font-bold">{{ referenceNumber }}</p>
-          </div>
-
-          <!-- User Info -->
+          <!-- User Info + Transaction + Reference -->
           <div class="bg-gray-50 p-3 rounded-lg mb-3 space-y-1">
+            <div class="flex justify-between text-xs">
+              <span class="text-gray-500">Transaction ID:</span>
+              <span class="font-medium font-mono">{{ transactionId }}</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-gray-500">Reference:</span>
+              <span class="font-medium font-mono">{{ referenceNumber }}</span>
+            </div>
             <div class="flex justify-between text-xs">
               <span class="text-gray-500">Name:</span>
               <span class="font-medium">{{ userFullName }}</span>
@@ -68,7 +65,7 @@
               <span class="font-bold text-[#1e88e5] text-xs">Total</span>
               <span class="font-bold text-base text-[#1e88e5]">${{ amount }}</span>
             </div>
-            <p class="text-center text-[10px] text-gray-500 mt-1 italic">Thank you for your purchase!</p>
+            <p class="text-center text-[10px] text-gray-500 mt-1 italic pb-4">Thank you for your purchase!</p>
           </div>
         </div>
       </div>
@@ -122,12 +119,19 @@ const submittedAt = ref('')
 // Detect iOS only
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 
+// Generate reference number with letters and numbers
+const generateReference = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  const random = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+  return 'REF-' + random
+}
+
 onMounted(() => {
   const lastTxn = sessionStorage.getItem('lastTransaction')
   if (lastTxn) {
     const data = JSON.parse(lastTxn)
     transactionId.value = data.transaction_id || 'N/A'
-    referenceNumber.value = 'REF' + Date.now().toString().slice(-8)
+    referenceNumber.value = generateReference()
     games.value = data.games || []
     amount.value = data.amount || 0
     bankName.value = data.bank_name || 'N/A'
@@ -163,7 +167,7 @@ const saveImage = async () => {
       const file = new File([blob], `receipt_${transactionId.value}.png`, { type: 'image/png' })
 
       if (isIOS && navigator.share && navigator.canShare({ files: [file] })) {
-        // iOS only → native share
+        // iOS only → native share sheet
         await navigator.share({
           files: [file],
           title: 'Payment Receipt',
