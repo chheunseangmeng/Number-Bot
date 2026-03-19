@@ -7,40 +7,42 @@
         ref="receiptRef"
         class="w-full max-w-full bg-white rounded-lg shadow-sm overflow-hidden"
       >
-        <div class="bg-[#1e88e5] text-white p-3 text-center">
+        <!-- Header -->
+        <div class="bg-[#1e88e5] text-white p-4 text-center">
           <h2 class="font-bold text-base">LUCKY NUMBER BOT</h2>
           <p class="text-[10px] opacity-90">Payment Receipt</p>
         </div>
 
-        <div class="p-3">
+        <!-- Body -->
+        <div class="p-4">
           <!-- Transaction ID -->
-          <div class="text-center mb-2">
+          <div class="text-center mb-3">
             <span class="text-[9px] text-gray-400">Transaction ID</span>
             <p class="font-mono text-xs font-bold">{{ transactionId }}</p>
           </div>
 
           <!-- User Info -->
-          <div class="bg-gray-50 p-2 rounded-lg mb-2">
+          <div class="bg-gray-50 p-3 rounded-lg mb-3 space-y-1">
             <div class="flex justify-between text-xs">
               <span class="text-gray-500">Name:</span>
               <span class="font-medium">{{ userFullName }}</span>
             </div>
-            <div class="flex justify-between text-xs mt-1">
+            <div class="flex justify-between text-xs">
               <span class="text-gray-500">Phone:</span>
               <span class="font-medium">{{ phone }}</span>
             </div>
-            <div class="flex justify-between text-xs mt-1">
+            <div class="flex justify-between text-xs">
               <span class="text-gray-500">Bank:</span>
               <span class="font-medium">{{ bankName }}</span>
             </div>
-            <div class="flex justify-between text-xs mt-1">
+            <div class="flex justify-between text-xs">
               <span class="text-gray-500">Date:</span>
               <span class="font-medium">{{ formattedDate }}</span>
             </div>
           </div>
 
           <!-- Games -->
-          <div class="mb-2">
+          <div class="mb-3">
             <h3 class="font-semibold text-xs mb-1">Selected Numbers</h3>
             <div class="space-y-1">
               <div
@@ -55,19 +57,21 @@
           </div>
 
           <!-- Total -->
-          <div class="mt-2 pt-1 border-t-2 border-[#1e88e5]">
-            <div class="flex justify-between items-center">
+          <div class="mt-3 pt-2 border-t-2 border-[#1e88e5]">
+            <div class="flex justify-between items-center mb-2">
               <span class="font-bold text-[#1e88e5] text-xs">Total</span>
               <span class="font-bold text-base text-[#1e88e5]">${{ amount }}</span>
             </div>
+            <!-- Thank you message -->
+            <p class="text-center text-[10px] text-gray-500 mt-1">Thank you for your purchase!</p>
           </div>
         </div>
       </div>
 
       <!-- Save to Photos Button -->
-      <div class="w-full max-w-xs mt-3">
+      <div class="w-full max-w-xs mt-4">
         <button
-          class="w-full py-2 px-4 rounded-lg text-sm font-semibold
+          class="w-full py-3 px-4 rounded-lg text-sm font-semibold
                  bg-blue-500 text-white
                  active:scale-95 transition-all"
           @click="saveImage"
@@ -79,7 +83,7 @@
       <!-- Close Button -->
       <div class="w-full max-w-xs mt-2 mb-6">
         <button
-          class="w-full py-2 px-4 rounded-lg text-sm font-semibold
+          class="w-full py-3 px-4 rounded-lg text-sm font-semibold
                  bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]
                  active:scale-95 transition-all"
           @click="handleClose"
@@ -108,6 +112,9 @@ const bankName = ref('')
 const games = ref([])
 const amount = ref(0)
 const submittedAt = ref('')
+
+// Detect iOS
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 
 onMounted(() => {
   const lastTxn = sessionStorage.getItem('lastTransaction')
@@ -147,7 +154,9 @@ const saveImage = async () => {
   link.download = `receipt_${transactionId.value}.png`
   link.click()
 
-  alert("If the image does not save automatically, tap and hold it to save to Photos 📸")
+  if (isIOS) {
+    alert("Tap and hold the image to save it to your Photos 📸")
+  }
 }
 
 const handleClose = () => {
