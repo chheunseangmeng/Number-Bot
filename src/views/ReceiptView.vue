@@ -68,7 +68,7 @@
               >
             </div>
             <p class="text-center text-[10px] text-gray-500 mt-1 italic pb-4">
-              Thank you for your purchase!
+                Thank you for visiting LuckyNumber!
             </p>
           </div>
         </div>
@@ -77,17 +77,17 @@
       <!-- Share Image Button -->
       <div class="w-full max-w-xs mt-4">
         <button
-          class="w-full py-3 px-4 rounded-lg text-sm font-semibold bg-blue-500 text-white active:scale-95 hover:scale-105 hover:bg-blue-600 transition-all duration-200 ease-in-out"
+          class="w-full py-3 px-4 rounded-lg text-sm font-semibold bg-blue-500 text-white active:scale-95 hover:scale-[1.02] hover:bg-blue-600 transition-all duration-200 ease-in-out"
           @click="saveImage"
         >
-          Share the Image
+          Share the image
         </button>
       </div>
 
       <!-- Close Button -->
       <div class="w-full max-w-xs mt-2 mb-6">
         <button
-          class="w-full py-3 px-4 rounded-lg text-sm font-semibold bg-[var(--tg-theme-inactive-bg-color)] text-[var(--tg-theme-text-color)] active:scale-95 hover:scale-105 hover:bg-[var(--tg-theme-hint-color)] hover:text-white transition-all duration-200 ease-in-out"
+          class="w-full py-3 px-4 rounded-lg text-sm font-semibold bg-[var(--tg-theme-inactive-bg-color)] text-[var(--tg-theme-text-color)] active:scale-95 hover:scale-[1.02] hover:bg-[var(--tg-theme-hint-color)] hover:text-white transition-all duration-200 ease-in-out"
           @click="handleClose"
         >
           Close
