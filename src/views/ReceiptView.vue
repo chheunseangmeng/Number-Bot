@@ -149,13 +149,16 @@ const saveImage = async () => {
   const canvas = await html2canvas(receiptRef.value, { scale: 2 })
   const image = canvas.toDataURL("image/png")
 
-  const link = document.createElement("a")
-  link.href = image
-  link.download = `receipt_${transactionId.value}.png`
-  link.click()
-
   if (isIOS) {
-    alert("Tap and hold the image to save it to your Photos 📸")
+    // Open image in new tab for iOS (user can save/share)
+    const newWindow = window.open()
+    newWindow.document.write(`<img src="${image}" style="width:100%;"/>`)
+  } else {
+    // Direct download for Android / Desktop
+    const link = document.createElement("a")
+    link.href = image
+    link.download = `receipt_${transactionId.value}.png`
+    link.click()
   }
 }
 
