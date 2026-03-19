@@ -1,12 +1,11 @@
 <template>
   <div class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)] overflow-hidden">
-
-    <div class="flex-1 flex flex-col items-center px-3 mt-10 overflow-y-auto">
+    <div class="flex-1 flex flex-col items-center px-3 mt-4 overflow-y-auto">
       
       <!-- Receipt Card -->
       <div 
         ref="receiptRef"
-        class="w-full max-w-xs bg-white rounded-xl shadow-lg overflow-hidden"
+        class="w-full max-w-full bg-white rounded-lg shadow-sm overflow-hidden"
       >
         <div class="bg-[#1e88e5] text-white p-3 text-center">
           <h2 class="font-bold text-base">LUCKY NUMBER BOT</h2>
@@ -14,11 +13,13 @@
         </div>
 
         <div class="p-3">
+          <!-- Transaction ID -->
           <div class="text-center mb-2">
             <span class="text-[9px] text-gray-400">Transaction ID</span>
             <p class="font-mono text-xs font-bold">{{ transactionId }}</p>
           </div>
 
+          <!-- User Info -->
           <div class="bg-gray-50 p-2 rounded-lg mb-2">
             <div class="flex justify-between text-xs">
               <span class="text-gray-500">Name:</span>
@@ -38,6 +39,7 @@
             </div>
           </div>
 
+          <!-- Games -->
           <div class="mb-2">
             <h3 class="font-semibold text-xs mb-1">Selected Numbers</h3>
             <div class="space-y-1">
@@ -52,6 +54,7 @@
             </div>
           </div>
 
+          <!-- Total -->
           <div class="mt-2 pt-1 border-t-2 border-[#1e88e5]">
             <div class="flex justify-between items-center">
               <span class="font-bold text-[#1e88e5] text-xs">Total</span>
@@ -61,15 +64,15 @@
         </div>
       </div>
 
-      <!-- Download PDF Button -->
+      <!-- Save to Photos Button -->
       <div class="w-full max-w-xs mt-3">
         <button
           class="w-full py-2 px-4 rounded-lg text-sm font-semibold
-                 bg-green-500 text-white
+                 bg-blue-500 text-white
                  active:scale-95 transition-all"
-          @click="downloadPDF"
+          @click="saveImage"
         >
-          Download PDF
+          Save to Photos
         </button>
       </div>
 
@@ -93,7 +96,6 @@
 import { computed, onMounted, ref } from "vue"
 import { useTelegram } from "../composables/useTelegram"
 import html2canvas from "html2canvas"
-import jsPDF from "jspdf"
 
 const { hapticFeedback, sendData, closeMiniApp } = useTelegram()
 
@@ -132,32 +134,20 @@ const formattedDate = computed(() => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 })
 
-const downloadPDF = async () => {
+/* Save Receipt as Image */
+const saveImage = async () => {
   if (!receiptRef.value) return
-
   hapticFeedback('medium')
 
-  const canvas = await html2canvas(receiptRef.value, {
-    scale: 2
-  })
+  const canvas = await html2canvas(receiptRef.value, { scale: 2 })
+  const image = canvas.toDataURL("image/png")
 
-  const imgData = canvas.toDataURL("image/png")
+  const link = document.createElement("a")
+  link.href = image
+  link.download = `receipt_${transactionId.value}.png`
+  link.click()
 
-  const pdf = new jsPDF({
-    orientation: "portrait",
-    unit: "mm",
-    format: "a4"
-  })
-
-  const imgWidth = 80
-  const imgHeight = (canvas.height * imgWidth) / canvas.width
-
-  const x = (210 - imgWidth) / 2
-  const y = 20
-
-  pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight)
-
-  pdf.save(`receipt_${transactionId.value}.pdf`)
+  alert("If the image does not save automatically, tap and hold it to save to Photos 📸")
 }
 
 const handleClose = () => {
