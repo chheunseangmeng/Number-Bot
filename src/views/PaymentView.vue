@@ -136,7 +136,7 @@ const handlePayNow = () => {
 
   const payload = {
     type: 'payment',
-    transaction_id: 'TXN' + Date.now() + Math.random().toString(36).substring(2, 6).toUpperCase(),
+    transaction_id: 'TXN' + Date.now().toString().slice(-8) + Math.random().toString(36).substring(2, 4).toUpperCase(),
     chat_id:       userData.chat_id,
     user_id:       userData.user_id,
     first_name:    userData.first_name,

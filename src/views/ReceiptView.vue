@@ -121,9 +121,12 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 
 // Generate reference number with letters and numbers
 const generateReference = () => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-  const random = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-  return 'REF-' + random
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const seq = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')
+  return `REF-${year}${month}${day}${seq}`
 }
 
 onMounted(() => {
