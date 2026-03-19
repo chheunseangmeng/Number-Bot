@@ -2,8 +2,12 @@
   <div class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)] overflow-hidden">
 
     <div class="flex-1 flex flex-col items-center px-3 mt-10 overflow-y-auto">
+      
       <!-- Receipt Card -->
-      <div class="w-full max-w-xs bg-white rounded-xl shadow-lg overflow-hidden">
+      <div 
+        ref="receiptRef"
+        class="w-full max-w-xs bg-white rounded-xl shadow-lg overflow-hidden"
+      >
         <div class="bg-[#1e88e5] text-white p-3 text-center">
           <h2 class="font-bold text-base">LUCKY NUMBER BOT</h2>
           <p class="text-[10px] opacity-90">Payment Receipt</p>
@@ -57,7 +61,20 @@
         </div>
       </div>
 
+      <!-- Download PDF Button -->
       <div class="w-full max-w-xs mt-3">
+        <button
+          class="w-full py-2 px-4 rounded-lg text-sm font-semibold
+                 bg-green-500 text-white
+                 active:scale-95 transition-all"
+          @click="downloadPDF"
+        >
+          Download PDF
+        </button>
+      </div>
+
+      <!-- Close Button -->
+      <div class="w-full max-w-xs mt-2 mb-6">
         <button
           class="w-full py-2 px-4 rounded-lg text-sm font-semibold
                  bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]
@@ -67,6 +84,7 @@
           Close
         </button>
       </div>
+
     </div>
   </div>
 </template>
@@ -74,8 +92,12 @@
 <script setup>
 import { computed, onMounted, ref } from "vue"
 import { useTelegram } from "../composables/useTelegram"
+import html2canvas from "html2canvas"
+import jsPDF from "jspdf"
 
 const { hapticFeedback, sendData, closeMiniApp } = useTelegram()
+
+const receiptRef = ref(null)
 
 const transactionId = ref('')
 const userFullName = ref('')
@@ -110,10 +132,38 @@ const formattedDate = computed(() => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 })
 
+const downloadPDF = async () => {
+  if (!receiptRef.value) return
+
+  hapticFeedback('medium')
+
+  const canvas = await html2canvas(receiptRef.value, {
+    scale: 2
+  })
+
+  const imgData = canvas.toDataURL("image/png")
+
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4"
+  })
+
+  const imgWidth = 80
+  const imgHeight = (canvas.height * imgWidth) / canvas.width
+
+  const x = (210 - imgWidth) / 2
+  const y = 20
+
+  pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight)
+
+  pdf.save(`receipt_${transactionId.value}.pdf`)
+}
+
 const handleClose = () => {
   hapticFeedback('light')
   const lastTxn = JSON.parse(sessionStorage.getItem('lastTransaction') || '{}')
-  sendData(lastTxn)  
-  closeMiniApp()    
+  sendData(lastTxn)
+  closeMiniApp()
 }
 </script>

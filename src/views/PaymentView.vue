@@ -77,7 +77,7 @@
     </div>
 
     <!-- Pay Now Button -->
-    <div class="w-full max-w-xs mx-auto px-3 pb-3 pt-3 flex-none mb-6">
+    <div class="w-full max-w-xs mx-auto mt-3 mb-8 flex-none">
       <button
         class="w-full py-3 px-4 rounded-lg text-sm font-semibold transition-all active:scale-95 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed"
         :class="
