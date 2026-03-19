@@ -62,7 +62,6 @@
               <span class="font-bold text-[#1e88e5] text-xs">Total</span>
               <span class="font-bold text-base text-[#1e88e5]">${{ amount }}</span>
             </div>
-            <!-- Thank you message -->
             <p class="text-center text-[10px] text-gray-500 mt-1">Thank you for your purchase!</p>
           </div>
         </div>
@@ -93,6 +92,17 @@
       </div>
 
     </div>
+
+    <!-- iOS Image Overlay (long-press to save) -->
+    <div
+      v-if="showOverlay"
+      class="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center"
+      @click="showOverlay = false"
+    >
+      <p class="text-white text-xs mb-3 opacity-70">Long press image to save • Tap anywhere to close</p>
+      <img :src="overlayImage" class="w-full max-w-sm" />
+    </div>
+
   </div>
 </template>
 
@@ -104,6 +114,8 @@ import html2canvas from "html2canvas"
 const { hapticFeedback, sendData, closeMiniApp } = useTelegram()
 
 const receiptRef = ref(null)
+const showOverlay = ref(false)
+const overlayImage = ref('')
 
 const transactionId = ref('')
 const userFullName = ref('')
@@ -141,24 +153,38 @@ const formattedDate = computed(() => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 })
 
-/* Save Receipt as Image */
 const saveImage = async () => {
   if (!receiptRef.value) return
   hapticFeedback('medium')
 
-  const canvas = await html2canvas(receiptRef.value, { scale: 2 })
-  const image = canvas.toDataURL("image/png")
+  try {
+    const canvas = await html2canvas(receiptRef.value, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      onclone: (clonedDoc) => {
+        const el = clonedDoc.querySelector('[data-receipt]')
+        if (el) {
+          el.style.backgroundColor = '#ffffff'
+        }
+      }
+    })
 
-  if (isIOS) {
-    // Open image in new tab for iOS (user can save/share)
-    const newWindow = window.open()
-    newWindow.document.write(`<img src="${image}" style="width:100%;"/>`)
-  } else {
-    // Direct download for Android / Desktop
-    const link = document.createElement("a")
-    link.href = image
-    link.download = `receipt_${transactionId.value}.png`
-    link.click()
+    const image = canvas.toDataURL("image/png")
+
+    if (isIOS) {
+      overlayImage.value = image
+      showOverlay.value = true
+    } else {
+      // Direct download for Android / Desktop
+      const link = document.createElement("a")
+      link.href = image
+      link.download = `receipt_${transactionId.value}.png`
+      link.click()
+    }
+  } catch (error) {
+    console.error('Failed to capture receipt:', error)
+    alert('Could not save image. Please take a screenshot instead.')
   }
 }
 
