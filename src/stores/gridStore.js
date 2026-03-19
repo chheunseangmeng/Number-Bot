@@ -9,7 +9,7 @@ export const useGridStore = defineStore('grid', () => {
   const _pendingSelection = ref([])
   const userData = ref(null)
   const MAX_SELECTION = 2
-  const MAX_GAMES = 5  // ✅ Correct limit
+  const MAX_GAMES = 5 
 
   const selectedCount = computed(() => selectedNumbers.value.length)
   const gamesCount = computed(() => games.value.length)

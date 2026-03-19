@@ -23,10 +23,6 @@
               <span class="font-medium font-mono">{{ transactionId }}</span>
             </div>
             <div class="flex justify-between text-xs">
-              <span class="text-gray-500">Reference:</span>
-              <span class="font-medium font-mono">{{ referenceNumber }}</span>
-            </div>
-            <div class="flex justify-between text-xs">
               <span class="text-gray-500">Name:</span>
               <span class="font-medium">{{ userFullName }}</span>
             </div>
@@ -37,6 +33,10 @@
             <div class="flex justify-between text-xs">
               <span class="text-gray-500">Bank:</span>
               <span class="font-medium">{{ bankName }}</span>
+            </div>
+             <div class="flex justify-between text-xs">
+              <span class="text-gray-500">Reference:</span>
+              <span class="font-medium font-mono">{{ referenceNumber }}</span>
             </div>
             <div class="flex justify-between text-xs">
               <span class="text-gray-500">Date:</span>
@@ -119,22 +119,12 @@ const submittedAt = ref('')
 // Detect iOS only
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 
-// Generate reference number with letters and numbers
-const generateReference = () => {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  const seq = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')
-  return `REF-${year}${month}${day}${seq}`
-}
-
 onMounted(() => {
   const lastTxn = sessionStorage.getItem('lastTransaction')
   if (lastTxn) {
     const data = JSON.parse(lastTxn)
     transactionId.value = data.transaction_id || 'N/A'
-    referenceNumber.value = generateReference()
+    referenceNumber.value = data.reference
     games.value = data.games || []
     amount.value = data.amount || 0
     bankName.value = data.bank_name || 'N/A'

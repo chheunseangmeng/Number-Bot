@@ -128,6 +128,21 @@ const allGames = computed(() => {
 
 const totalAmount = computed(() => allGames.value.length * PRICE_PER_GAME)
 
+const generateTransactionId = () => {
+  const timestamp = Date.now().toString().slice(-8)
+  const randomPart = Math.random().toString(36).substring(2, 4).toUpperCase()
+  return `TXN${timestamp}${randomPart}`
+}
+
+const generateReference = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const seq = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')
+  return `REF${year}${month}${day}${seq}`
+}
+
 const handlePayNow = () => {
   if (!selectedBank.value) return
   hapticFeedback("medium")
@@ -136,7 +151,8 @@ const handlePayNow = () => {
 
   const payload = {
     type: 'payment',
-    transaction_id: 'TXN' + Date.now().toString().slice(-8) + Math.random().toString(36).substring(2, 4).toUpperCase(),
+    transaction_id: generateTransactionId(),
+    reference:     generateReference(),
     chat_id:       userData.chat_id,
     user_id:       userData.user_id,
     first_name:    userData.first_name,
@@ -152,9 +168,9 @@ const handlePayNow = () => {
     submitted_at:  new Date().toISOString(),
   }
 
-  // ✅ Save to sessionStorage first then redirect — NO sendData here
   sessionStorage.setItem('lastTransaction', JSON.stringify(payload))
   store.clearAll()
   router.push("/receipt")
 }
+
 </script>
