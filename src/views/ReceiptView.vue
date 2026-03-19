@@ -18,27 +18,27 @@
 
           <!-- User Info + Transaction + Reference -->
           <div class="bg-gray-50 p-3 rounded-lg mb-3 space-y-1">
-            <div class="flex justify-between text-xs">
+            <div class="flex justify-between text-xs mb-1">
               <span class="text-gray-500">Transaction ID:</span>
-              <span class="font-medium font-mono">{{ transactionId }}</span>
+              <span class="font-medium">{{ transactionId }}</span>
             </div>
-            <div class="flex justify-between text-xs">
+            <div class="flex justify-between text-xs mb-1">
               <span class="text-gray-500">Name:</span>
               <span class="font-medium">{{ userFullName }}</span>
             </div>
-            <div class="flex justify-between text-xs">
+            <div class="flex justify-between text-xs mb-1">
               <span class="text-gray-500">Phone:</span>
               <span class="font-medium">{{ phone }}</span>
             </div>
-            <div class="flex justify-between text-xs">
+            <div class="flex justify-between text-xs mb-1">
               <span class="text-gray-500">Bank:</span>
               <span class="font-medium">{{ bankName }}</span>
             </div>
-             <div class="flex justify-between text-xs">
+             <div class="flex justify-between text-xs mb-1">
               <span class="text-gray-500">Reference:</span>
-              <span class="font-medium font-mono">{{ referenceNumber }}</span>
+              <span class="font-medium">{{ referenceNumber }}</span>
             </div>
-            <div class="flex justify-between text-xs">
+            <div class="flex justify-between text-xs mb-1">
               <span class="text-gray-500">Date:</span>
               <span class="font-medium">{{ formattedDate }}</span>
             </div>
