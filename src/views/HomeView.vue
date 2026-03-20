@@ -232,6 +232,12 @@ const handleEditGame = (index) => {
 const handleSubmit = () => {
   if (!canSubmit.value) return
   hapticFeedback("medium")
+
+   if (store.selectedCount === 2 && store.editingIndex === null && store.gamesCount < store.MAX_GAMES) {
+    store.saveGame()
+  }
+
+
   router.push("/payment")
 }
 </script>
