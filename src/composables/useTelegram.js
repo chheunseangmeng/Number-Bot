@@ -1,6 +1,8 @@
 import { onMounted } from 'vue'
 import { useGridStore } from '../stores/gridStore'
 
+let initialized = false
+
 export function useTelegram() {
   const store = useGridStore()
   const getTelegramWebApp = () => window.Telegram?.WebApp || null
@@ -10,9 +12,11 @@ export function useTelegram() {
   }
 
   onMounted(() => {
+    if (initialized) return
+    initialized = true
+
     const urlParams = new URLSearchParams(window.location.search)
 
-    //Only update userData if URL params exist
     const fullName = urlParams.get('tg_user_full_name')
     if (fullName) {
       const userData = {
@@ -40,10 +44,8 @@ export function useTelegram() {
       }
     }
 
-    // Load saved game data from sessionStorage
     store.loadFromSession()
 
-    // Apply Telegram theme if available
     const tg = getTelegramWebApp()
     if (tg) {
       tg.ready()

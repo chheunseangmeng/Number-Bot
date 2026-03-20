@@ -3,10 +3,11 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
 import { useTelegram } from './composables/useTelegram'
+import { useGridStore } from './stores/gridStore'
 
-onMounted(() => {
-  const { } = useTelegram()
-})
+useTelegram()
+
+const store = useGridStore()
+store.loadFromSession()
 </script>
