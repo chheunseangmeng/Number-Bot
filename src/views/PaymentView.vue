@@ -1,12 +1,38 @@
 <template>
   <div class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)] overflow-hidden">
     <!-- Header -->
-    <header class="text-center pt-3 pb-1 flex-none">
+    <header class="text-center pt-3 pb-1 flex-none relative">
+      <button
+        class="absolute left-3 border px-2 py-1 rounded-md top-3 text-sm text-[var(--tg-theme-hint-color)] active:scale-95 transition-all"
+        @click="handleBack"
+      >
+      <i class="fa-solid fa-angle-left"></i>Back
+      </button>
       <h1 class="text-md font-bold text-gray-600 italic">Payment</h1>
       <p class="text-xs text-[var(--tg-theme-hint-color)]">
         Select your bank
       </p>
     </header>
+
+    <!-- Expired Overlay -->
+    <div
+      v-if="isExpired"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
+    >
+      <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-xl">
+        <div class="text-5xl mb-3">⏰</div>
+        <h2 class="text-base font-bold text-gray-800 mb-1">Time Expired!</h2>
+        <p class="text-sm text-gray-500 mb-5">
+          Your session has expired. Please select your numbers again.
+        </p>
+        <button
+          class="w-full py-2 rounded-lg text-sm font-semibold bg-[#1e88e5] text-white active:scale-95 transition-all"
+          @click="handleExpiredConfirm"
+        >
+          OK
+        </button>
+      </div>
+    </div>
 
     <div class="flex-1 flex flex-col items-center px-3 overflow-y-auto">
       <!-- Order Summary -->
@@ -20,7 +46,7 @@
           :key="index"
           class="flex justify-between items-center py-1"
         >
-          <span class="text-xs text-[var(--tg-theme-hint-color)]">Game {{ index + 1 }}</span>
+          <span class="text-xs text-[var(--tg-theme-hint-color)]">Line {{ index + 1 }}</span>
           <span class="text-xs font-bold text-[var(--tg-theme-text-color)]">
             {{ game[0] }} , {{ game[1] }}
           </span>
@@ -74,10 +100,70 @@
           </button>
         </div>
       </div>
+
+      <!-- Countdown Timer - Medium Size (Balanced) -->
+      <div class="w-full max-w-xs flex-none mt-8 flex flex-col items-center">
+        <div class="relative w-28 h-28">
+          <!-- SVG Progress Ring -->
+          <svg class="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
+            <!-- Background circle -->
+            <circle
+              cx="50" cy="50" r="44"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="5"
+              class="text-[var(--tg-theme-hint-color)] opacity-20"
+            />
+            <!-- Progress circle -->
+            <circle
+              cx="50" cy="50" r="44"
+              fill="none"
+              stroke-width="5"
+              stroke-linecap="round"
+              :stroke="timeLeft <= 30 ? '#ef4444' : 'var(--tg-theme-button-color)'"
+              :stroke-dasharray="circumference"
+              :stroke-dashoffset="dashOffset"
+              style="transition: stroke-dashoffset 0.3s linear, stroke 0.3s"
+            />
+          </svg>
+
+          <!-- Time Text -->
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <span
+              class="text-xl font-bold tabular-nums"
+              :class="timeLeft <= 30 ? 'text-red-500' : 'text-[var(--tg-theme-text-color)]'"
+            >
+              {{ formattedTime }}
+            </span>
+            <span
+              class="text-[9px] font-medium mt-0.5 text-[var(--tg-theme-hint-color)]"
+            >
+              remaining
+            </span>
+          </div>
+        </div>
+
+        <!-- Warning Message -->
+        <div
+          v-if="timeLeft <= 30 && timeLeft > 0"
+          class="mt-3"
+        >
+          <p class="text-xs font-semibold text-red-500 flex items-center gap-1">
+            <span>⚠️</span> Hurry up! <span>⚠️</span>
+          </p>
+        </div>
+        <p
+          v-else
+          class="text-[10px] mt-2 text-[var(--tg-theme-hint-color)]"
+        >
+          Time remaining to pay
+        </p>
+      </div>
+
     </div>
 
     <!-- Pay Now Button -->
-    <div class="w-full max-w-xs mx-auto mt-3 mb-8 flex-none">
+    <div class="w-full max-w-xs mx-auto mt-4 mb-8 flex-none">
       <button
         class="w-full py-3 px-4 rounded-lg text-sm font-semibold transition-all active:scale-95 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed"
         :class="
@@ -95,7 +181,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue"
+import { ref, computed, onMounted, onUnmounted } from "vue"
 import { useRouter } from "vue-router"
 import { useGridStore } from "../stores/gridStore"
 import { useTelegram } from "../composables/useTelegram"
@@ -106,7 +192,49 @@ const { hapticFeedback } = useTelegram()
 
 const selectedBank = ref("")
 const PRICE_PER_GAME = 1.0
+const isExpired = ref(false)
 
+// Countdown 
+const timeLeft = ref(180)
+let countdownInterval = null
+
+const circumference = 2 * Math.PI * 44 
+
+const dashOffset = computed(() => {
+  const progress = timeLeft.value / 180
+  return circumference * (1 - progress)
+})
+
+const formattedTime = computed(() => {
+  const minutes = Math.floor(timeLeft.value / 60)
+  const seconds = String(timeLeft.value % 60).padStart(2, '0')
+  return `${minutes}:${seconds}`
+})
+
+onMounted(() => {
+  countdownInterval = setInterval(() => {
+    if (timeLeft.value > 0) {
+      timeLeft.value--
+      if (timeLeft.value <= 0) {
+        clearInterval(countdownInterval)
+        isExpired.value = true
+        hapticFeedback('medium')
+      }
+    }
+  }, 1000)
+})
+
+onUnmounted(() => {
+  clearInterval(countdownInterval)
+})
+
+const handleExpiredConfirm = () => {
+  store.clearAll()
+  sessionStorage.removeItem('lastTransaction')
+  router.push("/")
+}
+
+// Banks 
 const banks = [
   { name: "ABA",    logo: "/banks/aba.png" },
   { name: "ACLEDA", logo: "/banks/acleda.png" },
@@ -140,37 +268,49 @@ const generateReference = () => {
   const month = String(now.getMonth() + 1).padStart(2, '0')
   const day = String(now.getDate()).padStart(2, '0')
   const seq = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')
-  return `REF${year}${month}${day}${seq}`
+  return `REF-${year}${month}${day}${seq}`
+}
+
+const handleBack = () => {
+  hapticFeedback("light")
+  clearInterval(countdownInterval)
+  router.push("/")
 }
 
 const handlePayNow = () => {
   if (!selectedBank.value) return
   hapticFeedback("medium")
+  clearInterval(countdownInterval)
 
   const userData = store.userData || JSON.parse(sessionStorage.getItem('userData') || '{}')
 
   const payload = {
-    type: 'payment',
+    type:           'payment',
     transaction_id: generateTransactionId(),
-    reference:     generateReference(),
-    chat_id:       userData.chat_id,
-    user_id:       userData.user_id,
-    first_name:    userData.first_name,
-    last_name:     userData.last_name,
-    full_name:     userData.full_name,
-    username:      userData.username,
-    language_code: userData.language_code,
-    phone:         userData.phone || 'N/A',
-    games:         allGames.value,
-    bank_name:     selectedBank.value,
-    amount:        totalAmount.value,
-    game_count:    allGames.value.length,
-    submitted_at:  new Date().toISOString(),
+    reference:      generateReference(),
+    chat_id:        userData.chat_id,
+    user_id:        userData.user_id,
+    first_name:     userData.first_name,
+    last_name:      userData.last_name,
+    full_name:      userData.full_name,
+    username:       userData.username,
+    language_code:  userData.language_code,
+    phone:          userData.phone || 'N/A',
+    games:          allGames.value,
+    bank_name:      selectedBank.value,
+    amount:         totalAmount.value,
+    game_count:     allGames.value.length,
+    submitted_at:   new Date().toISOString(),
   }
 
   sessionStorage.setItem('lastTransaction', JSON.stringify(payload))
   store.clearAll()
   router.push("/receipt")
 }
-
 </script>
+
+<style scoped>
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+</style>

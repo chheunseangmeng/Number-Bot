@@ -80,7 +80,7 @@
           class="w-full py-3 px-4 rounded-lg text-sm font-semibold bg-blue-500 text-white active:scale-95 hover:scale-[1.02] hover:bg-blue-600 transition-all duration-200 ease-in-out"
           @click="saveImage"
         >
-          Share the image
+          Save the image
         </button>
       </div>
 

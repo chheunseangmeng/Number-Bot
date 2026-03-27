@@ -31,6 +31,7 @@ export function useTelegram() {
         full_name:     urlParams.get('tg_user_full_name'),
         phone:         urlParams.get('tg_contact_phone_number'),
         age_confirmed: urlParams.get('tg_age_confirmed') === 'true',
+        photo_url: urlParams.get('tg_user_photo_url'),
         raw_user:      JSON.parse(urlParams.get('tg_user') || '{}')
       }
       store.setUserData(userData)
