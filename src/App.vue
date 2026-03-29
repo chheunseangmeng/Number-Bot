@@ -12,12 +12,15 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useTelegram } from './composables/useTelegram'
+import { useClosingConfirmation } from './composables/useClosingConfirmation'
 import { useGridStore } from './stores/gridStore'
 import AgeConfirmDialog from './components/ui/AgeConfirmDialog.vue'
 
 const { closeMiniApp, hapticFeedback } = useTelegram()
 const store = useGridStore()
 const showAgeConfirm = ref(false)
+
+useClosingConfirmation()
 
 onMounted(() => {
   store.loadFromSession()

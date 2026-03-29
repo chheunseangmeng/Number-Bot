@@ -21,9 +21,14 @@
 
       <!-- Right: Title -->
       <div class="text-right">
-        <h1 class="text-sm font-bold text-gray-600 italic">
-          Select your numbers
-        </h1>
+         <!-- RESET BUTTON -->
+        <button
+          v-if="store.games.length > 0 || store.selectedCount > 0"
+          class="text-xs text-red-400 px-3 py-1 rounded-md hover:bg-red-500 hover:text-white border cursor-pointer active:scale-95 transition-all duration-300 ease-in-out"
+          @click="handleReset"
+        >
+          Reset all lines
+        </button>
       </div>
     </header>
 
@@ -153,8 +158,8 @@
         </div>
       </div>
 
-      <!-- TOGGLE + RESET -->
-      <div class="flex items-center justify-between w-full max-w-md mt-1">
+      <!-- Toggle show game -->
+      <div class="flex items-center justify-center w-full max-w-md mt-1">
         <p
           @click="isShowGames = !isShowGames"
           class="text-sm text-[var(--tg-theme-hint-color)] underline cursor-pointer"
@@ -167,15 +172,6 @@
               : 0)
           }}/{{ store.MAX_GAMES }})
         </p>
-
-        <!-- RESET BUTTON -->
-        <button
-          v-if="store.games.length > 0 || store.selectedCount > 0"
-          class="text-xs text-red-400 underline cursor-pointer active:scale-95 transition-all"
-          @click="handleReset"
-        >
-          Reset all lines
-        </button>
       </div>
 
       <!-- ACTION BUTTONS -->
