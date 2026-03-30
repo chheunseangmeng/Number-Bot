@@ -1,8 +1,9 @@
 <template>
   <button
-    class="w-full py-3 px-6 rounded-md text-lg font-semibold transition-all
-           active:scale-98 disabled:opacity-30 disabled:cursor-not-allowed
-           focus:outline-none focus:ring-2 focus:ring-[var(--tg-theme-button-color)]"
+    class="w-full h-10 px-6 rounded-md text-sm font-semibold transition-all
+           active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed
+           focus:outline-none focus:ring-2 focus:ring-[var(--tg-theme-button-color)]
+           flex items-center justify-center"
     :class="[
       variant === 'primary'
         ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)] hover:opacity-90'
