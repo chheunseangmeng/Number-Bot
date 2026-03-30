@@ -104,9 +104,7 @@
 
         <!-- Current row -->
         <div
-          v-if="
-            store.editingIndex === null && store.linesCount < store.MAX_LINES
-          "
+          v-if="store.editingIndex === null && store.linesCount < store.MAX_LINES"
           class="flex items-center justify-between px-3 py-1 mb-1 rounded-md bg-[var(--tg-theme-secondary-bg-color)]"
         >
           <span class="text-sm text-[var(--tg-theme-hint-color)]">
@@ -119,7 +117,7 @@
         </div>
       </div>
 
-      <!-- SELECTION BOXES - hide when max lines reached -->
+      <!-- SELECTION BOXES -->
       <div
         v-if="store.linesCount < store.MAX_LINES || store.editingIndex !== null"
         class="flex gap-2 w-full max-w-md flex-none"
@@ -181,18 +179,9 @@
 
       <!-- ACTION BUTTONS -->
       <div class="w-full max-w-md flex-none mt-1 mb-1">
-        <!-- Not ready -->
-        <NextButton
-          v-if="!canSubmit && store.linesCount < store.MAX_LINES"
-          :disabled="true"
-          text="Select 2 numbers"
-        />
-
         <!-- MAX reached → FULL NEXT -->
         <NextButton
-          v-else-if="
-            store.linesCount === store.MAX_LINES && store.editingIndex === null
-          "
+          v-if="store.linesCount === store.MAX_LINES && store.editingIndex === null"
           text="Next"
           variant="primary"
           class="w-full"
@@ -206,6 +195,7 @@
             text="Add Line"
             variant="secondary"
             class="flex-1"
+            :disabled="!canSubmit"
             @click="handleSaveLine"
           />
 
@@ -214,6 +204,7 @@
             text="Add Line"
             variant="secondary"
             class="flex-1"
+            :disabled="!canSubmit"
             @click="handleSaveLine"
           />
 
@@ -221,6 +212,7 @@
             text="Next"
             variant="primary"
             class="flex-1"
+            :disabled="!canSubmit && store.linesCount === 0"
             @click="handleSubmit"
           />
         </div>
@@ -230,96 +222,97 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import NumberGrid from "@/components/grid/NumberGrid.vue";
-import NextButton from "@/components/ui/NextButton.vue";
-import { useGridStore } from "../stores/gridStore";
-import { useTelegram } from "../composables/useTelegram";
+import { computed, ref, onMounted } from "vue"
+import { useRouter } from "vue-router"
+import NumberGrid from "@/components/grid/NumberGrid.vue"
+import NextButton from "@/components/ui/NextButton.vue"
+import { useGridStore } from "../stores/gridStore"
+import { useTelegram } from "../composables/useTelegram"
 
-const store = useGridStore();
-const router = useRouter();
-const { hapticFeedback } = useTelegram();
+const store = useGridStore()
+const router = useRouter()
+const { hapticFeedback } = useTelegram()
 
 // Game ID & 1-per-day logic
-const gameId = ref(1);
-const alreadyPlayedToday = ref(false);
+const gameId = ref(1)
+const alreadyPlayedToday = ref(false)
 
 const formattedGameId = computed(
-  () => "Game #" + String(gameId.value).padStart(3, "0"),
-);
+  () => "Game #" + String(gameId.value).padStart(3, "0")
+)
 
 const getTodayDate = () => {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-};
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
+}
 
 const initGameId = () => {
-  const today = getTodayDate();
-  const lastDate = localStorage.getItem("last_played_date");
-  const storedGameId = parseInt(localStorage.getItem("game_id") || "0");
+  const today = getTodayDate()
+  const lastDate = localStorage.getItem("last_played_date")
+  const storedGameId = parseInt(localStorage.getItem("game_id") || "0")
 
   if (lastDate === today) {
-    gameId.value = storedGameId || 1;
-    const lastTxn = sessionStorage.getItem("lastTransaction");
+    gameId.value = storedGameId || 1
+    const lastTxn = sessionStorage.getItem("lastTransaction")
     if (lastTxn) {
-      alreadyPlayedToday.value = true;
+      alreadyPlayedToday.value = true
     }
   } else {
-    const newId = storedGameId + 1;
-    gameId.value = newId;
-    localStorage.setItem("game_id", newId);
-    localStorage.setItem("last_played_date", today);
-    alreadyPlayedToday.value = false;
+    const newId = storedGameId + 1
+    gameId.value = newId
+    localStorage.setItem("game_id", newId)
+    localStorage.setItem("last_played_date", today)
+    alreadyPlayedToday.value = false
   }
-};
+}
 
 onMounted(() => {
-  initGameId();
-});
+  initGameId()
+})
 
 // Selected Numbers
 const selectedNumbers = computed(() => {
-  const boxes = ["?", "?"];
+  const boxes = ["?", "?"]
   store.selectedNumbers.forEach((num, i) => {
-    if (i < 2) boxes[i] = num;
-  });
-  return boxes;
-});
+    if (i < 2) boxes[i] = num
+  })
+  return boxes
+})
 
-const isShowLines = ref(false);
-const canSubmit = computed(() => store.selectedCount === 2);
+const isShowLines = ref(false)
+const canSubmit = computed(() => store.selectedCount === 2)
 
 const canAddLine = computed(
   () =>
     store.selectedCount === 2 &&
     store.editingIndex === null &&
-    store.linesCount < store.MAX_LINES - 1,
-);
+    store.linesCount < store.MAX_LINES - 1
+)
 
 const canSave = computed(
-  () => store.selectedCount === 2 && store.editingIndex !== null,
-);
+  () => store.selectedCount === 2 && store.editingIndex !== null
+)
 
 const handleSaveLine = () => {
-  store.saveLine();
-  hapticFeedback("light");
-};
+  if (!canSubmit.value) return
+  store.saveLine()
+  hapticFeedback("light")
+}
 
 const handleEditLine = (index) => {
-  store.editLine(index);
-  hapticFeedback("light");
-};
+  store.editLine(index)
+  hapticFeedback("light")
+}
 
 const handleReset = async () => {
-  hapticFeedback("light");
+  hapticFeedback("light")
 
-  const isEditingLine = store.editingIndex !== null;
-  const lineNumber = store.editingIndex + 1;
-  const title = isEditingLine ? `Reset Line ${lineNumber}` : "Reset Lines";
+  const isEditingLine = store.editingIndex !== null
+  const lineNumber = store.editingIndex + 1
+  const title = isEditingLine ? `Reset Line ${lineNumber}` : "Reset Lines"
   const message = isEditingLine
     ? `Are you sure you want to reset Line ${lineNumber}?`
-    : "Are you sure you want to reset all lines?";
+    : "Are you sure you want to reset all lines?"
 
   const confirmed = await new Promise((resolve) => {
     try {
@@ -333,39 +326,39 @@ const handleReset = async () => {
               { id: "yes", type: "destructive", text: "Yes" },
             ],
           },
-          (buttonId) => resolve(buttonId === "yes"),
-        );
+          (buttonId) => resolve(buttonId === "yes")
+        )
       } else {
-        resolve(window.confirm(message));
+        resolve(window.confirm(message))
       }
     } catch (error) {
-      console.warn("showPopup failed:", error);
-      resolve(window.confirm(message));
+      console.warn("showPopup failed:", error)
+      resolve(window.confirm(message))
     }
-  });
+  })
 
   if (confirmed) {
     if (isEditingLine) {
-      store.deleteLine(store.editingIndex);
+      store.deleteLine(store.editingIndex)
     } else {
-      store.clearAll();
+      store.clearAll()
     }
-    hapticFeedback("medium");
+    hapticFeedback("medium")
   }
-};
+}
 
 const handleSubmit = () => {
-  if (!canSubmit.value && store.linesCount < store.MAX_LINES) return;
-  hapticFeedback("medium");
+  if (!canSubmit.value && store.linesCount === 0) return
+  hapticFeedback("medium")
 
   if (
     store.selectedCount === 2 &&
     store.editingIndex === null &&
     store.linesCount < store.MAX_LINES
   ) {
-    store.saveLine();
+    store.saveLine()
   }
 
-  router.push("/payment");
-};
+  router.push("/payment")
+}
 </script>
