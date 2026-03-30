@@ -19,15 +19,18 @@
         </div>
       </div>
 
-      <!-- Right: Title -->
+      <!-- Right: Reset Button -->
       <div class="text-right">
-         <!-- RESET BUTTON -->
         <button
-          v-if="store.games.length > 0 || store.selectedCount > 0"
+          v-if="store.lines.length > 0 || store.selectedCount > 0"
           class="text-xs text-red-400 px-3 py-1 rounded-md hover:bg-red-500 hover:text-white border cursor-pointer active:scale-95 transition-all duration-300 ease-in-out"
           @click="handleReset"
         >
-          Reset all lines
+          {{
+            store.editingIndex !== null
+              ? `Reset Line ${store.editingIndex + 1}`
+              : "Reset all lines"
+          }}
         </button>
       </div>
     </header>
@@ -54,15 +57,15 @@
 
       <hr class="w-full max-w-md my-2" />
 
-      <!-- GAMES LIST -->
+      <!-- LINES LIST -->
       <div
-        v-if="store.games.length > 0 || store.selectedCount > 0"
-        v-show="isShowGames"
+        v-if="store.lines.length > 0 || store.selectedCount > 0"
+        v-show="isShowLines"
         class="w-full max-w-md flex-none mb-2 max-h-[108px] overflow-y-auto"
       >
-        <!-- Saved -->
+        <!-- Saved Lines -->
         <div
-          v-for="(game, index) in store.games"
+          v-for="(line, index) in store.lines"
           :key="index"
           class="flex items-center justify-between px-3 py-1 mb-1 rounded-md cursor-pointer active:scale-95 transition-all duration-150"
           :class="
@@ -70,7 +73,7 @@
               ? 'bg-[var(--tg-theme-button-color)]'
               : 'bg-[var(--tg-theme-secondary-bg-color)]'
           "
-          @click="handleEditGame(index)"
+          @click="handleEditLine(index)"
         >
           <span
             class="text-sm"
@@ -80,7 +83,7 @@
                 : 'text-[var(--tg-theme-hint-color)]'
             "
           >
-            Game {{ index + 1 }}
+            Line {{ index + 1 }}
           </span>
 
           <span
@@ -95,17 +98,19 @@
               {{ selectedNumbers[0] !== "?" ? selectedNumbers[0] : "..." }} ,
               {{ selectedNumbers[1] !== "?" ? selectedNumbers[1] : "..." }}
             </template>
-            <template v-else> {{ game[0] }} , {{ game[1] }} </template>
+            <template v-else> {{ line[0] }} , {{ line[1] }} </template>
           </span>
         </div>
 
         <!-- Current row -->
         <div
-          v-if="store.editingIndex === null && store.gamesCount < store.MAX_GAMES"
+          v-if="
+            store.editingIndex === null && store.linesCount < store.MAX_LINES
+          "
           class="flex items-center justify-between px-3 py-1 mb-1 rounded-md bg-[var(--tg-theme-secondary-bg-color)]"
         >
           <span class="text-sm text-[var(--tg-theme-hint-color)]">
-            Game {{ store.gamesCount + 1 }}
+            Line {{ store.linesCount + 1 }}
           </span>
           <span class="text-sm font-bold text-[var(--tg-theme-text-color)]">
             {{ selectedNumbers[0] !== "?" ? selectedNumbers[0] : "..." }} ,
@@ -114,14 +119,14 @@
         </div>
       </div>
 
-      <!-- SELECTION BOXES - hide when max games reached -->
+      <!-- SELECTION BOXES - hide when max lines reached -->
       <div
-        v-if="store.gamesCount < store.MAX_GAMES"
+        v-if="store.linesCount < store.MAX_LINES || store.editingIndex !== null"
         class="flex gap-2 w-full max-w-md flex-none"
       >
         <!-- Box 1 -->
         <div
-          class="flex-1 h-12 rounded-md flex items-center justify-center text-3xl font-bold relative"
+          class="flex-1 h-10 rounded-md flex items-center justify-center text-2xl font-bold relative"
           :class="
             selectedNumbers[0] !== '?'
               ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
@@ -140,7 +145,7 @@
 
         <!-- Box 2 -->
         <div
-          class="flex-1 h-12 rounded-md flex items-center justify-center text-3xl font-bold relative"
+          class="flex-1 h-10 rounded-md flex items-center justify-center text-2xl font-bold relative"
           :class="
             selectedNumbers[1] !== '?'
               ? 'bg-[var(--tg-theme-button-color)] text-[var(--tg-theme-button-text-color)]'
@@ -158,19 +163,19 @@
         </div>
       </div>
 
-      <!-- Toggle show game -->
+      <!-- Toggle show lines -->
       <div class="flex items-center justify-center w-full max-w-md mt-1">
         <p
-          @click="isShowGames = !isShowGames"
+          @click="isShowLines = !isShowLines"
           class="text-sm text-[var(--tg-theme-hint-color)] underline cursor-pointer"
         >
-          {{ isShowGames ? "Hide" : "Show" }} game list (
+          {{ isShowLines ? "Hide" : "Show" }} line list (
           {{
-            store.gamesCount +
-            (store.editingIndex === null && store.gamesCount < store.MAX_GAMES
+            store.linesCount +
+            (store.editingIndex === null && store.linesCount < store.MAX_LINES
               ? 1
               : 0)
-          }}/{{ store.MAX_GAMES }})
+          }}/{{ store.MAX_LINES }})
         </p>
       </div>
 
@@ -178,14 +183,16 @@
       <div class="w-full max-w-md flex-none mt-1 mb-1">
         <!-- Not ready -->
         <NextButton
-          v-if="!canSubmit && store.gamesCount < store.MAX_GAMES"
+          v-if="!canSubmit && store.linesCount < store.MAX_LINES"
           :disabled="true"
           text="Select 2 numbers"
         />
 
         <!-- MAX reached → FULL NEXT -->
         <NextButton
-          v-else-if="store.gamesCount === store.MAX_GAMES && store.editingIndex === null"
+          v-else-if="
+            store.linesCount === store.MAX_LINES && store.editingIndex === null
+          "
           text="Next"
           variant="primary"
           class="w-full"
@@ -196,18 +203,18 @@
         <div v-else class="flex gap-2">
           <NextButton
             v-if="canSave"
-            text="Save"
-            variant="secondary"
-            class="flex-1"
-            @click="handleSaveGame"
-          />
-
-          <NextButton
-            v-if="canAddGame"
             text="Add Line"
             variant="secondary"
             class="flex-1"
-            @click="handleSaveGame"
+            @click="handleSaveLine"
+          />
+
+          <NextButton
+            v-if="canAddLine"
+            text="Add Line"
+            variant="secondary"
+            class="flex-1"
+            @click="handleSaveLine"
           />
 
           <NextButton
@@ -223,131 +230,142 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from "vue"
-import { useRouter } from "vue-router"
-import NumberGrid from "@/components/grid/NumberGrid.vue"
-import NextButton from "@/components/ui/NextButton.vue"
-import { useGridStore } from "../stores/gridStore"
-import { useTelegram } from "../composables/useTelegram"
+import { computed, ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import NumberGrid from "@/components/grid/NumberGrid.vue";
+import NextButton from "@/components/ui/NextButton.vue";
+import { useGridStore } from "../stores/gridStore";
+import { useTelegram } from "../composables/useTelegram";
 
-const store = useGridStore()
-const router = useRouter()
-const { hapticFeedback } = useTelegram()
+const store = useGridStore();
+const router = useRouter();
+const { hapticFeedback } = useTelegram();
 
-// ── Game ID & 1-per-day logic ──────────────────────────────
-const gameId = ref(1)
-const alreadyPlayedToday = ref(false)
+// Game ID & 1-per-day logic
+const gameId = ref(1);
+const alreadyPlayedToday = ref(false);
 
 const formattedGameId = computed(
-  () => "Game #" + String(gameId.value).padStart(3, "0")
-)
+  () => "Game #" + String(gameId.value).padStart(3, "0"),
+);
 
 const getTodayDate = () => {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
-}
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+};
 
 const initGameId = () => {
-  const today = getTodayDate()
-  const lastDate = localStorage.getItem("last_played_date")
-  const storedGameId = parseInt(localStorage.getItem("game_id") || "0")
+  const today = getTodayDate();
+  const lastDate = localStorage.getItem("last_played_date");
+  const storedGameId = parseInt(localStorage.getItem("game_id") || "0");
 
   if (lastDate === today) {
-    gameId.value = storedGameId || 1
-    const lastTxn = sessionStorage.getItem("lastTransaction")
+    gameId.value = storedGameId || 1;
+    const lastTxn = sessionStorage.getItem("lastTransaction");
     if (lastTxn) {
-      alreadyPlayedToday.value = true
+      alreadyPlayedToday.value = true;
     }
   } else {
-    const newId = storedGameId + 1
-    gameId.value = newId
-    localStorage.setItem("game_id", newId)
-    localStorage.setItem("last_played_date", today)
-    alreadyPlayedToday.value = false
+    const newId = storedGameId + 1;
+    gameId.value = newId;
+    localStorage.setItem("game_id", newId);
+    localStorage.setItem("last_played_date", today);
+    alreadyPlayedToday.value = false;
   }
-}
+};
 
 onMounted(() => {
-  initGameId()
-})
+  initGameId();
+});
 
 // Selected Numbers
 const selectedNumbers = computed(() => {
-  const boxes = ["?", "?"]
+  const boxes = ["?", "?"];
   store.selectedNumbers.forEach((num, i) => {
-    if (i < 2) boxes[i] = num
-  })
-  return boxes
-})
+    if (i < 2) boxes[i] = num;
+  });
+  return boxes;
+});
 
-const isShowGames = ref(false)
-const canSubmit = computed(() => store.selectedCount === 2)
+const isShowLines = ref(false);
+const canSubmit = computed(() => store.selectedCount === 2);
 
-const canAddGame = computed(
+const canAddLine = computed(
   () =>
     store.selectedCount === 2 &&
     store.editingIndex === null &&
-    store.gamesCount < store.MAX_GAMES - 1
-)
+    store.linesCount < store.MAX_LINES - 1,
+);
 
 const canSave = computed(
-  () => store.selectedCount === 2 && store.editingIndex !== null
-)
+  () => store.selectedCount === 2 && store.editingIndex !== null,
+);
 
-const handleSaveGame = () => {
-  store.saveGame()
-  hapticFeedback("light")
-}
+const handleSaveLine = () => {
+  store.saveLine();
+  hapticFeedback("light");
+};
 
-const handleEditGame = (index) => {
-  store.editGame(index)
-  hapticFeedback("light")
-}
+const handleEditLine = (index) => {
+  store.editLine(index);
+  hapticFeedback("light");
+};
 
 const handleReset = async () => {
-  hapticFeedback("light")
+  hapticFeedback("light");
+
+  const isEditingLine = store.editingIndex !== null;
+  const lineNumber = store.editingIndex + 1;
+  const title = isEditingLine ? `Reset Line ${lineNumber}` : "Reset Lines";
+  const message = isEditingLine
+    ? `Are you sure you want to reset Line ${lineNumber}?`
+    : "Are you sure you want to reset all lines?";
 
   const confirmed = await new Promise((resolve) => {
     try {
       if (window.Telegram?.WebApp?.showPopup) {
         window.Telegram.WebApp.showPopup(
           {
-            title: "Reset Lines",
-            message: "Are you sure you want to reset all lines?",
+            title,
+            message,
             buttons: [
               { id: "no", type: "cancel" },
               { id: "yes", type: "destructive", text: "Yes" },
             ],
           },
-          (buttonId) => resolve(buttonId === "yes")
-        )
+          (buttonId) => resolve(buttonId === "yes"),
+        );
       } else {
-        resolve(window.confirm("Are you sure you want to reset all lines?"))
+        resolve(window.confirm(message));
       }
     } catch (error) {
-      console.warn("showPopup failed:", error)
-      resolve(window.confirm("Are you sure you want to reset all lines?"))
+      console.warn("showPopup failed:", error);
+      resolve(window.confirm(message));
     }
-  })
+  });
 
   if (confirmed) {
-    store.clearAll()
-    hapticFeedback("medium")
+    if (isEditingLine) {
+      store.deleteLine(store.editingIndex);
+    } else {
+      store.clearAll();
+    }
+    hapticFeedback("medium");
   }
-}
+};
 
 const handleSubmit = () => {
-  if (!canSubmit.value && store.gamesCount < store.MAX_GAMES) return
-  hapticFeedback("medium")
+  if (!canSubmit.value && store.linesCount < store.MAX_LINES) return;
+  hapticFeedback("medium");
 
   if (
     store.selectedCount === 2 &&
     store.editingIndex === null &&
-    store.gamesCount < store.MAX_GAMES
+    store.linesCount < store.MAX_LINES
   ) {
-    store.saveGame()
+    store.saveLine();
   }
 
-  router.push("/payment")
-}
+  router.push("/payment");
+};
 </script>

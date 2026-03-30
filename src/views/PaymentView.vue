@@ -6,7 +6,7 @@
         class="absolute left-3 border px-2 py-1 rounded-md top-3 text-sm text-[var(--tg-theme-hint-color)] active:scale-95 transition-all"
         @click="handleBack"
       >
-      <i class="fa-solid fa-angle-left"></i>Back
+        <i class="fa-solid fa-angle-left"></i>Back
       </button>
       <h1 class="text-md font-bold text-gray-600 italic">Payment</h1>
       <p class="text-xs text-[var(--tg-theme-hint-color)]">
@@ -42,13 +42,13 @@
         </h2>
 
         <div
-          v-for="(game, index) in allGames"
+          v-for="(line, index) in allLines"
           :key="index"
           class="flex justify-between items-center py-1"
         >
           <span class="text-xs text-[var(--tg-theme-hint-color)]">Line {{ index + 1 }}</span>
           <span class="text-xs font-bold text-[var(--tg-theme-text-color)]">
-            {{ game[0] }} , {{ game[1] }}
+            {{ line[0] }} , {{ line[1] }}
           </span>
         </div>
 
@@ -101,10 +101,9 @@
         </div>
       </div>
 
-      <!-- Countdown Timer - Medium Size (Balanced) -->
+      <!-- Countdown Timer -->
       <div class="w-full max-w-xs flex-none mt-8 flex flex-col items-center">
         <div class="relative w-28 h-28">
-          <!-- SVG Progress Ring -->
           <svg class="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
             <!-- Background circle -->
             <circle
@@ -135,31 +134,22 @@
             >
               {{ formattedTime }}
             </span>
-            <span
-              class="text-[9px] font-medium mt-0.5 text-[var(--tg-theme-hint-color)]"
-            >
+            <span class="text-[9px] font-medium mt-0.5 text-[var(--tg-theme-hint-color)]">
               remaining
             </span>
           </div>
         </div>
 
         <!-- Warning Message -->
-        <div
-          v-if="timeLeft <= 30 && timeLeft > 0"
-          class="mt-3"
-        >
+        <div v-if="timeLeft <= 30 && timeLeft > 0" class="mt-3">
           <p class="text-xs font-semibold text-red-500 flex items-center gap-1">
             <span>⚠️</span> Hurry up! <span>⚠️</span>
           </p>
         </div>
-        <p
-          v-else
-          class="text-[10px] mt-2 text-[var(--tg-theme-hint-color)]"
-        >
+        <p v-else class="text-[10px] mt-2 text-[var(--tg-theme-hint-color)]">
           Time remaining to pay
         </p>
       </div>
-
     </div>
 
     <!-- Pay Now Button -->
@@ -191,14 +181,14 @@ const store = useGridStore()
 const { hapticFeedback } = useTelegram()
 
 const selectedBank = ref("")
-const PRICE_PER_GAME = 1.0
+const PRICE_PER_LINE = 1.0
 const isExpired = ref(false)
 
-// Countdown 
+// ── Countdown ──────────────────────────────────────────────
 const timeLeft = ref(180)
 let countdownInterval = null
 
-const circumference = 2 * Math.PI * 44 
+const circumference = 2 * Math.PI * 44
 
 const dashOffset = computed(() => {
   const progress = timeLeft.value / 180
@@ -234,7 +224,7 @@ const handleExpiredConfirm = () => {
   router.push("/")
 }
 
-// Banks 
+// ── Banks ──────────────────────────────────────────────────
 const banks = [
   { name: "ABA",    logo: "/banks/aba.png" },
   { name: "ACLEDA", logo: "/banks/acleda.png" },
@@ -242,19 +232,20 @@ const banks = [
   { name: "Wing",   logo: "/banks/wing.png" },
 ]
 
-const allGames = computed(() => {
+// ── All Lines ──────────────────────────────────────────────
+const allLines = computed(() => {
   if (store.editingIndex !== null) {
-    return store.games.map((g, i) =>
-      i === store.editingIndex ? [...store.selectedNumbers] : g
+    return store.lines.map((l, i) =>
+      i === store.editingIndex ? [...store.selectedNumbers] : l
     )
   }
   if (store.selectedCount === 2) {
-    return [...store.games, [...store.selectedNumbers]]
+    return [...store.lines, [...store.selectedNumbers]]
   }
-  return store.games
+  return store.lines
 })
 
-const totalAmount = computed(() => allGames.value.length * PRICE_PER_GAME)
+const totalAmount = computed(() => allLines.value.length * PRICE_PER_LINE)
 
 const generateTransactionId = () => {
   const timestamp = Date.now().toString().slice(-8)
@@ -296,10 +287,10 @@ const handlePayNow = () => {
     username:       userData.username,
     language_code:  userData.language_code,
     phone:          userData.phone || 'N/A',
-    games:          allGames.value,
+    lines:          allLines.value,
     bank_name:      selectedBank.value,
     amount:         totalAmount.value,
-    game_count:     allGames.value.length,
+    line_count:     allLines.value.length,
     submitted_at:   new Date().toISOString(),
   }
 

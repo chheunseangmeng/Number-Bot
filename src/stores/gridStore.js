@@ -2,17 +2,17 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export const useGridStore = defineStore('grid', () => {
-  const games = ref([])
+  const lines = ref([])
   const selectedNumbers = ref([])
   const startParam = ref('')
   const editingIndex = ref(null)
   const _pendingSelection = ref([])
   const userData = ref(null)
   const MAX_SELECTION = 2
-  const MAX_GAMES = 5 
+  const MAX_LINES = 5
 
   const selectedCount = computed(() => selectedNumbers.value.length)
-  const gamesCount = computed(() => games.value.length)
+  const linesCount = computed(() => lines.value.length)
   const canSelectMore = computed(() => selectedNumbers.value.length < MAX_SELECTION)
 
   const isSelected = (number) => selectedNumbers.value.includes(number)
@@ -45,38 +45,38 @@ export const useGridStore = defineStore('grid', () => {
     saveToSession()
   }
 
-  function saveGame() {
+  function saveLine() {
     if (selectedNumbers.value.length !== MAX_SELECTION) return
-    
+
     if (editingIndex.value !== null) {
-      // Update existing game
-      games.value[editingIndex.value] = [...selectedNumbers.value]
+      // Update existing line
+      lines.value[editingIndex.value] = [...selectedNumbers.value]
       editingIndex.value = null
-      
+
       if (_pendingSelection.value.length === MAX_SELECTION) {
         selectedNumbers.value = [..._pendingSelection.value]
         _pendingSelection.value = []
       } else {
         selectedNumbers.value = []
       }
-    } else if (games.value.length < MAX_GAMES) {
-      // Add new game
-      games.value.push([...selectedNumbers.value])
+    } else if (lines.value.length < MAX_LINES) {
+      // Add new line
+      lines.value.push([...selectedNumbers.value])
       selectedNumbers.value = []
     }
-    
+
     saveToSession()
   }
 
-  function editGame(index) {
+  function editLine(index) {
     if (editingIndex.value !== null) {
       if (selectedNumbers.value.length === MAX_SELECTION) {
-        games.value[editingIndex.value] = [...selectedNumbers.value]
+        lines.value[editingIndex.value] = [...selectedNumbers.value]
       }
     } else {
-      if (games.value.length < MAX_GAMES) {
+      if (lines.value.length < MAX_LINES) {
         if (selectedNumbers.value.length === MAX_SELECTION) {
-          games.value.push([...selectedNumbers.value])
+          lines.value.push([...selectedNumbers.value])
         }
       } else {
         _pendingSelection.value = [...selectedNumbers.value]
@@ -84,15 +84,22 @@ export const useGridStore = defineStore('grid', () => {
     }
 
     editingIndex.value = index
-    selectedNumbers.value = [...games.value[index]]
+    selectedNumbers.value = [...lines.value[index]]
     saveToSession()
   }
 
   function clearAll() {
-    games.value = []
+    lines.value = []
     selectedNumbers.value = []
     editingIndex.value = null
     _pendingSelection.value = []
+    saveToSession()
+  }
+
+  function deleteLine(index) {
+    lines.value.splice(index, 1)
+    editingIndex.value = null
+    selectedNumbers.value = []
     saveToSession()
   }
 
@@ -109,7 +116,7 @@ export const useGridStore = defineStore('grid', () => {
   // Session Storage functions
   function saveToSession() {
     sessionStorage.setItem('selectedNumbers', JSON.stringify(selectedNumbers.value))
-    sessionStorage.setItem('games', JSON.stringify(games.value))
+    sessionStorage.setItem('lines', JSON.stringify(lines.value))
     sessionStorage.setItem('editingIndex', JSON.stringify(editingIndex.value))
     sessionStorage.setItem('userData', JSON.stringify(userData.value))
     sessionStorage.setItem('startParam', JSON.stringify(startParam.value))
@@ -118,39 +125,40 @@ export const useGridStore = defineStore('grid', () => {
   function loadFromSession() {
     const savedNumbers = sessionStorage.getItem('selectedNumbers')
     if (savedNumbers) selectedNumbers.value = JSON.parse(savedNumbers)
-    
-    const savedGames = sessionStorage.getItem('games')
-    if (savedGames) games.value = JSON.parse(savedGames)
-    
+
+    const savedLines = sessionStorage.getItem('lines')
+    if (savedLines) lines.value = JSON.parse(savedLines)
+
     const savedEditingIndex = sessionStorage.getItem('editingIndex')
     if (savedEditingIndex) editingIndex.value = JSON.parse(savedEditingIndex)
-    
+
     const savedUserData = sessionStorage.getItem('userData')
     if (savedUserData) userData.value = JSON.parse(savedUserData)
-    
+
     const savedStartParam = sessionStorage.getItem('startParam')
     if (savedStartParam) startParam.value = JSON.parse(savedStartParam)
   }
 
   return {
-    games,
+    lines,
     selectedNumbers,
     startParam,
     editingIndex,
     userData,
     MAX_SELECTION,
-    MAX_GAMES,
+    MAX_LINES,
     selectedCount,
-    gamesCount,
+    linesCount,
     canSelectMore,
     isSelected,
     selectNumber,
     deselectNumber,
     toggleNumber,
     clearSelection,
-    saveGame,
-    editGame,
+    saveLine,
+    editLine,
     clearAll,
+    deleteLine,
     setStartParam,
     setUserData,
     saveToSession,
