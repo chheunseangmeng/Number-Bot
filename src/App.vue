@@ -12,18 +12,6 @@
       @no="handleNo"
     />
 
-    <!-- Exit Confirm -->
-    <ConfirmDialog
-      v-if="showExitConfirm"
-      title="Leave Page"
-      message="Are you sure you want to leave this page?"
-      yesText="Yes"
-      noText="Stay"
-      icon="⚠️"
-      @yes="confirmExit"
-      @no="showExitConfirm = false"
-    />
-
     <!-- Main App -->
     <router-view v-if="!showAgeConfirm" />
   </div>
@@ -39,25 +27,17 @@ const { closeMiniApp, hapticFeedback } = useTelegram()
 const store = useGridStore()
 
 const showAgeConfirm = ref(false)
-const showExitConfirm = ref(false)
 
 onMounted(() => {
   const tg = window.Telegram?.WebApp
-
   store.loadFromSession()
 
-  // Age check
   if (!sessionStorage.getItem('age_confirmed')) {
     showAgeConfirm.value = true
   }
 
   if (tg) {
     tg.enableClosingConfirmation()
-    tg.BackButton.show()
-
-    tg.BackButton.onClick(() => {
-      showExitConfirm.value = true
-    })
   }
 })
 
@@ -69,10 +49,6 @@ const handleYes = () => {
 
 const handleNo = () => {
   hapticFeedback('light')
-  closeMiniApp()
-}
-
-const confirmExit = () => {
   closeMiniApp()
 }
 </script>
