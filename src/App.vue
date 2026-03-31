@@ -16,7 +16,7 @@
       title="Leave App"
       message="Are you sure you want to leave?"
       yesText="Yes, Leave"
-      noText="Stay"
+      noText="No"
       icon="⚠️"
       @yes="handleLeave"
       @no="showExitConfirm = false"
