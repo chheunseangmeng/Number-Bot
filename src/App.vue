@@ -14,7 +14,7 @@
     <ConfirmDialog
       v-if="showExitConfirm"
       title="Leave App"
-      message="Are you sure you want to leave?"
+      message="Are you sure you want to leave this Mini App"
       yesText="Yes, Leave"
       noText="No"
       icon="⚠️"

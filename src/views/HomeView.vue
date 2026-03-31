@@ -57,9 +57,9 @@
 
       <hr class="w-full max-w-md my-2" />
 
-      <!-- LINES LIST -->
+      <!-- LINES LIST - only show saved lines -->
       <div
-        v-if="store.lines.length > 0 || store.selectedCount > 0"
+        v-if="store.lines.length > 0"
         v-show="isShowLines"
         class="w-full max-w-md flex-none mb-2 max-h-[108px] overflow-y-auto"
       >
@@ -99,20 +99,6 @@
               {{ selectedNumbers[1] !== "?" ? selectedNumbers[1] : "..." }}
             </template>
             <template v-else> {{ line[0] }} , {{ line[1] }} </template>
-          </span>
-        </div>
-
-        <!-- Current row -->
-        <div
-          v-if="store.editingIndex === null && store.linesCount < store.MAX_LINES"
-          class="flex items-center justify-between px-3 py-1 mb-1 rounded-md bg-[var(--tg-theme-secondary-bg-color)]"
-        >
-          <span class="text-sm text-[var(--tg-theme-hint-color)]">
-            Line {{ store.linesCount + 1 }}
-          </span>
-          <span class="text-sm font-bold text-[var(--tg-theme-text-color)]">
-            {{ selectedNumbers[0] !== "?" ? selectedNumbers[0] : "..." }} ,
-            {{ selectedNumbers[1] !== "?" ? selectedNumbers[1] : "..." }}
           </span>
         </div>
       </div>
@@ -162,18 +148,16 @@
       </div>
 
       <!-- Toggle show lines -->
-      <div class="flex items-center justify-center w-full max-w-md mt-1">
+      <div
+        v-if="store.lines.length > 0"
+        class="flex items-center justify-center w-full max-w-md mt-1"
+      >
         <p
           @click="isShowLines = !isShowLines"
           class="text-sm text-[var(--tg-theme-hint-color)] underline cursor-pointer"
         >
           {{ isShowLines ? "Hide" : "Show" }} line list (
-          {{
-            store.linesCount +
-            (store.editingIndex === null && store.linesCount < store.MAX_LINES
-              ? 1
-              : 0)
-          }}/{{ store.MAX_LINES }})
+          {{ store.linesCount }}/{{ store.MAX_LINES }})
         </p>
       </div>
 
