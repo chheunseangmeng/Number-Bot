@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!-- Age Confirm -->
     <ConfirmDialog
       v-if="showAgeConfirm"
       title="Age Verification"
@@ -12,7 +11,17 @@
       @no="handleNo"
     />
 
-    <!-- Main App -->
+    <ConfirmDialog
+      v-if="showExitConfirm"
+      title="Leave App"
+      message="Are you sure you want to leave?"
+      yesText="Yes, Leave"
+      noText="Stay"
+      icon="⚠️"
+      @yes="handleLeave"
+      @no="showExitConfirm = false"
+    />
+
     <router-view v-if="!showAgeConfirm" />
   </div>
 </template>
@@ -22,23 +31,20 @@ import { ref, onMounted } from 'vue'
 import ConfirmDialog from './components/ui/ConfirmDialog.vue'
 import { useTelegram } from './composables/useTelegram'
 import { useGridStore } from './stores/gridStore'
+import { useBackButton } from './composables/useBackButton'
 
 const { closeMiniApp, hapticFeedback } = useTelegram()
 const store = useGridStore()
+const { showExitConfirm, init, handleLeave } = useBackButton(closeMiniApp)
 
 const showAgeConfirm = ref(false)
 
 onMounted(() => {
-  const tg = window.Telegram?.WebApp
   store.loadFromSession()
-
   if (!sessionStorage.getItem('age_confirmed')) {
     showAgeConfirm.value = true
   }
-
-  if (tg) {
-    tg.enableClosingConfirmation()
-  }
+  init()
 })
 
 const handleYes = () => {
