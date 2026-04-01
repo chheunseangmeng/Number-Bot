@@ -1,32 +1,5 @@
 <template>
   <div class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)]">
-
-    <!-- Exit Confirm -->
-    <div
-      v-if="showExitConfirm"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
-    >
-      <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-xl">
-        <div class="text-5xl mb-3">⚠️</div>
-        <h2 class="text-base font-bold text-gray-800 mb-1">Leave App</h2>
-        <p class="text-sm text-gray-500 mb-5">Are you sure you want to leave this Mini App?</p>
-        <div class="flex gap-3">
-          <button
-            class="flex-1 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-600 active:scale-95 transition-all"
-            @click="showExitConfirm = false"
-          >
-            No
-          </button>
-          <button
-            class="flex-1 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white active:scale-95 transition-all"
-            @click="handleLeave"
-          >
-            Yes, Leave
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- HEADER -->
     <header class="flex items-center justify-between px-2 py-2 flex-none">
       <!-- Left: Profile -->
@@ -46,26 +19,14 @@
         </div>
       </div>
 
-      <!-- Right: Reset + Close Buttons -->
-      <div class="flex items-center gap-2">
+      <!-- Right: Reset All Button -->
+      <div class="text-right">
         <button
           v-if="store.lines.length > 0 || store.selectedCount > 0"
           class="text-xs text-red-400 px-3 py-1 rounded-md hover:bg-red-500 hover:text-white border cursor-pointer active:scale-95 transition-all duration-300 ease-in-out"
-          @click="handleReset"
+          @click="handleResetAll"
         >
-          {{
-            store.editingIndex !== null
-              ? `Reset Line ${store.editingIndex + 1}`
-              : "Reset all lines"
-          }}
-        </button>
-
-        <!-- Close Button -->
-        <button
-          class="text-xs text-gray-400 px-3 py-1 rounded-md border cursor-pointer active:scale-95 hover:bg-gray-200 transition-all duration-300 ease-in-out"
-          @click="showExitConfirm = true"
-        >
-          Close
+          Reset all lines
         </button>
       </div>
     </header>
@@ -121,20 +82,35 @@
             Line {{ index + 1 }}
           </span>
 
-          <span
-            class="text-sm font-bold"
-            :class="
-              store.editingIndex === index
-                ? 'text-[var(--tg-theme-button-text-color)]'
-                : 'text-[var(--tg-theme-text-color)]'
-            "
-          >
-            <template v-if="store.editingIndex === index">
-              {{ selectedNumbers[0] !== "?" ? selectedNumbers[0] : "..." }} ,
-              {{ selectedNumbers[1] !== "?" ? selectedNumbers[1] : "..." }}
-            </template>
-            <template v-else> {{ line[0] }} , {{ line[1] }} </template>
-          </span>
+          <div class="flex items-center gap-2">
+            <span
+              class="text-sm font-bold"
+              :class="
+                store.editingIndex === index
+                  ? 'text-[var(--tg-theme-button-text-color)]'
+                  : 'text-[var(--tg-theme-text-color)]'
+              "
+            >
+              <template v-if="store.editingIndex === index">
+                {{ selectedNumbers[0] !== "?" ? selectedNumbers[0] : "..." }} ,
+                {{ selectedNumbers[1] !== "?" ? selectedNumbers[1] : "..." }}
+              </template>
+              <template v-else> {{ line[0] }} , {{ line[1] }} </template>
+            </span>
+            
+            <!-- Delete Icon for each line -->
+            <button
+              class="text-sm cursor-pointer hover:scale-110 transition-transform"
+              :class="
+                store.editingIndex === index
+                  ? 'text-[var(--tg-theme-button-text-color)]'
+                  : 'text-red-400'
+              "
+              @click.stop="handleDeleteLine(index)"
+            >
+              ❌
+            </button>
+          </div>
         </div>
       </div>
 
@@ -250,17 +226,9 @@ import { useTelegram } from "../composables/useTelegram"
 
 const store = useGridStore()
 const router = useRouter()
-const { hapticFeedback, closeMiniApp } = useTelegram()
+const { hapticFeedback } = useTelegram()
 
-// Exit Confirm
-const showExitConfirm = ref(false)
-
-const handleLeave = () => {
-  hapticFeedback('light')
-  closeMiniApp()
-}
-
-// Game ID & 1-per-day logic
+// ── Game ID & 1-per-day logic ──────────────────────────────
 const gameId = ref(1)
 const alreadyPlayedToday = ref(false)
 
@@ -297,7 +265,7 @@ onMounted(() => {
   initGameId()
 })
 
-// Selected Numbers
+// ── Selected Numbers ───────────────────────────────────────
 const selectedNumbers = computed(() => {
   const boxes = ["?", "?"]
   store.selectedNumbers.forEach((num, i) => {
@@ -331,23 +299,48 @@ const handleEditLine = (index) => {
   hapticFeedback("light")
 }
 
-const handleReset = async () => {
+const handleDeleteLine = async (index) => {
   hapticFeedback("light")
+  
+  const confirmed = await new Promise((resolve) => {
+    try {
+      if (window.Telegram?.WebApp?.showPopup) {
+        window.Telegram.WebApp.showPopup(
+          {
+            title: `Delete Line ${index + 1}`,
+            message: `Are you sure you want to delete Line ${index + 1}?`,
+            buttons: [
+              { id: "no", type: "cancel" },
+              { id: "yes", type: "destructive", text: "Delete" },
+            ],
+          },
+          (buttonId) => resolve(buttonId === "yes")
+        )
+      } else {
+        resolve(window.confirm(`Are you sure you want to delete Line ${index + 1}?`))
+      }
+    } catch (error) {
+      console.warn("showPopup failed:", error)
+      resolve(window.confirm(`Are you sure you want to delete Line ${index + 1}?`))
+    }
+  })
 
-  const isEditingLine = store.editingIndex !== null
-  const lineNumber = store.editingIndex + 1
-  const title = isEditingLine ? `Reset Line ${lineNumber}` : "Reset Lines"
-  const message = isEditingLine
-    ? `Are you sure you want to reset Line ${lineNumber}?`
-    : "Are you sure you want to reset all lines?"
+  if (confirmed) {
+    store.deleteLine(index)
+    hapticFeedback("medium")
+  }
+}
+
+const handleResetAll = async () => {
+  hapticFeedback("light")
 
   const confirmed = await new Promise((resolve) => {
     try {
       if (window.Telegram?.WebApp?.showPopup) {
         window.Telegram.WebApp.showPopup(
           {
-            title,
-            message,
+            title: "Reset All Lines",
+            message: "Are you sure you want to reset all lines?",
             buttons: [
               { id: "no", type: "cancel" },
               { id: "yes", type: "destructive", text: "Yes" },
@@ -356,20 +349,16 @@ const handleReset = async () => {
           (buttonId) => resolve(buttonId === "yes")
         )
       } else {
-        resolve(window.confirm(message))
+        resolve(window.confirm("Are you sure you want to reset all lines?"))
       }
     } catch (error) {
       console.warn("showPopup failed:", error)
-      resolve(window.confirm(message))
+      resolve(window.confirm("Are you sure you want to reset all lines?"))
     }
   })
 
   if (confirmed) {
-    if (isEditingLine) {
-      store.deleteLine(store.editingIndex)
-    } else {
-      store.clearAll()
-    }
+    store.clearAll()
     hapticFeedback("medium")
   }
 }
