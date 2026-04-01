@@ -11,17 +11,6 @@
       @no="handleNo"
     />
 
-    <ConfirmDialog
-      v-if="showExitConfirm"
-      title="Leave App"
-      message="Are you sure you want to leave this Mini App"
-      yesText="Yes, Leave"
-      noText="No"
-      icon="⚠️"
-      @yes="handleLeave"
-      @no="showExitConfirm = false"
-    />
-
     <router-view v-if="!showAgeConfirm" />
   </div>
 </template>
@@ -35,7 +24,7 @@ import { useBackButton } from './composables/useBackButton'
 
 const { closeMiniApp, hapticFeedback } = useTelegram()
 const store = useGridStore()
-const { showExitConfirm, init, handleLeave } = useBackButton(closeMiniApp)
+const { init } = useBackButton(closeMiniApp)
 
 const showAgeConfirm = ref(false)
 

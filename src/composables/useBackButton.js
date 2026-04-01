@@ -7,10 +7,6 @@ export function useBackButton(onConfirm) {
     const tg = window.Telegram?.WebApp
     if (tg) {
       tg.enableClosingConfirmation()
-      tg.BackButton.show()
-      tg.BackButton.onClick(() => {
-        showExitConfirm.value = true
-      })
     }
   }
 

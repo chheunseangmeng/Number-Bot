@@ -1,5 +1,32 @@
 <template>
   <div class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)]">
+
+    <!-- Exit Confirm -->
+    <div
+      v-if="showExitConfirm"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
+    >
+      <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-xl">
+        <div class="text-5xl mb-3">⚠️</div>
+        <h2 class="text-base font-bold text-gray-800 mb-1">Leave App</h2>
+        <p class="text-sm text-gray-500 mb-5">Are you sure you want to leave this Mini App?</p>
+        <div class="flex gap-3">
+          <button
+            class="flex-1 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-600 active:scale-95 transition-all"
+            @click="showExitConfirm = false"
+          >
+            No
+          </button>
+          <button
+            class="flex-1 py-2 rounded-lg text-sm font-semibold bg-red-500 text-white active:scale-95 transition-all"
+            @click="handleLeave"
+          >
+            Yes, Leave
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- HEADER -->
     <header class="flex items-center justify-between px-2 py-2 flex-none">
       <!-- Left: Profile -->
@@ -19,8 +46,8 @@
         </div>
       </div>
 
-      <!-- Right: Reset Button -->
-      <div class="text-right">
+      <!-- Right: Reset + Close Buttons -->
+      <div class="flex items-center gap-2">
         <button
           v-if="store.lines.length > 0 || store.selectedCount > 0"
           class="text-xs text-red-400 px-3 py-1 rounded-md hover:bg-red-500 hover:text-white border cursor-pointer active:scale-95 transition-all duration-300 ease-in-out"
@@ -31,6 +58,14 @@
               ? `Reset Line ${store.editingIndex + 1}`
               : "Reset all lines"
           }}
+        </button>
+
+        <!-- Close Button -->
+        <button
+          class="text-xs text-gray-400 px-3 py-1 rounded-md border cursor-pointer active:scale-95 hover:bg-gray-200 transition-all duration-300 ease-in-out"
+          @click="showExitConfirm = true"
+        >
+          Close
         </button>
       </div>
     </header>
@@ -215,7 +250,15 @@ import { useTelegram } from "../composables/useTelegram"
 
 const store = useGridStore()
 const router = useRouter()
-const { hapticFeedback } = useTelegram()
+const { hapticFeedback, closeMiniApp } = useTelegram()
+
+// Exit Confirm
+const showExitConfirm = ref(false)
+
+const handleLeave = () => {
+  hapticFeedback('light')
+  closeMiniApp()
+}
 
 // Game ID & 1-per-day logic
 const gameId = ref(1)
