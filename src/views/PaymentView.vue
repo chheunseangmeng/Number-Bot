@@ -23,7 +23,7 @@
         <div class="text-5xl mb-3">⏰</div>
         <h2 class="text-base font-bold text-gray-800 mb-1">Time Expired!</h2>
         <p class="text-sm text-gray-500 mb-5">
-          Your session has expired. Please go back and try again.
+          Please click OK to return and complete your payment.
         </p>
         <button
           class="w-full py-2 rounded-lg text-sm font-semibold bg-[#1e88e5] text-white active:scale-95 transition-all"
