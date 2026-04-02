@@ -105,7 +105,6 @@
       <div class="w-full max-w-xs flex-none mt-8 flex flex-col items-center">
         <div class="relative w-28 h-28">
           <svg class="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
-            <!-- Background circle -->
             <circle
               cx="50" cy="50" r="44"
               fill="none"
@@ -113,7 +112,6 @@
               stroke-width="5"
               class="text-[var(--tg-theme-hint-color)] opacity-20"
             />
-            <!-- Progress circle -->
             <circle
               cx="50" cy="50" r="44"
               fill="none"
@@ -126,7 +124,6 @@
             />
           </svg>
 
-          <!-- Time Text -->
           <div class="absolute inset-0 flex flex-col items-center justify-center">
             <span
               class="text-xl font-bold tabular-nums"
@@ -140,10 +137,9 @@
           </div>
         </div>
 
-        <!-- Warning Message -->
         <div v-if="timeLeft <= 30 && timeLeft > 0" class="mt-3">
           <p class="text-xs font-semibold text-red-500 flex items-center gap-1">
-            <span>⚠️</span> Hurry up! <span>⚠️</span>
+            Hurry up! <span>⚠️</span>
           </p>
         </div>
         <p v-else class="text-[10px] mt-2 text-[var(--tg-theme-hint-color)]">
@@ -182,48 +178,68 @@ const { hapticFeedback } = useTelegram()
 
 const selectedBank = ref("")
 const PRICE_PER_LINE = 1.0
+const TOTAL_TIME = 180
 const isExpired = ref(false)
-
-// ── Countdown ──────────────────────────────────────────────
-const timeLeft = ref(180)
+const timeLeft = ref(TOTAL_TIME)
 let countdownInterval = null
 
+// Countdown
 const circumference = 2 * Math.PI * 44
 
 const dashOffset = computed(() => {
-  const progress = timeLeft.value / 180
+  const progress = timeLeft.value / TOTAL_TIME
   return circumference * (1 - progress)
 })
 
 const formattedTime = computed(() => {
   const minutes = Math.floor(timeLeft.value / 60)
-  const seconds = String(timeLeft.value % 60).padStart(2, '0')
+  const seconds = String(timeLeft.value % 60).padStart(2, "0")
   return `${minutes}:${seconds}`
 })
 
-onMounted(() => {
+const startCountdown = () => {
   countdownInterval = setInterval(() => {
     if (timeLeft.value > 0) {
       timeLeft.value--
       if (timeLeft.value <= 0) {
         clearInterval(countdownInterval)
         isExpired.value = true
-        hapticFeedback('medium')
+        hapticFeedback("medium")
       }
     }
   }, 1000)
+}
+
+onMounted(() => {
+  const savedStartTime = sessionStorage.getItem("payment_start_time")
+
+  if (savedStartTime) {
+    const elapsed = Math.floor((Date.now() - parseInt(savedStartTime)) / 1000)
+    const remaining = TOTAL_TIME - elapsed
+    if (remaining <= 0) {
+      isExpired.value = true
+      return
+    }
+    timeLeft.value = remaining
+  } else {
+    sessionStorage.setItem("payment_start_time", Date.now().toString())
+    timeLeft.value = TOTAL_TIME
+  }
+
+  startCountdown()
 })
 
 onUnmounted(() => {
   clearInterval(countdownInterval)
 })
 
+// Expired
 const handleExpiredConfirm = () => {
-  // Navigate back to home WITHOUT clearing the lines
+  sessionStorage.removeItem("payment_start_time")
   router.push("/")
 }
 
-// ── Banks ──────────────────────────────────────────────────
+// Banks
 const banks = [
   { name: "ABA",    logo: "/banks/aba.png" },
   { name: "ACLEDA", logo: "/banks/acleda.png" },
@@ -231,7 +247,7 @@ const banks = [
   { name: "Wing",   logo: "/banks/wing.png" },
 ]
 
-// ── All Lines ──────────────────────────────────────────────
+// All Lines
 const allLines = computed(() => {
   if (store.editingIndex !== null) {
     return store.lines.map((l, i) =>
@@ -246,36 +262,41 @@ const allLines = computed(() => {
 
 const totalAmount = computed(() => allLines.value.length * PRICE_PER_LINE)
 
+// Generate Transaction ID
 const generateTransactionId = () => {
   const timestamp = Date.now().toString().slice(-8)
   const randomPart = Math.random().toString(36).substring(2, 4).toUpperCase()
   return `TXN${timestamp}${randomPart}`
 }
 
+// Generate Reference
 const generateReference = () => {
   const now = new Date()
   const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  const seq = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')
+  const month = String(now.getMonth() + 1).padStart(2, "0")
+  const day = String(now.getDate()).padStart(2, "0")
+  const seq = String(Math.floor(Math.random() * 999) + 1).padStart(3, "0")
   return `REF-${year}${month}${day}${seq}`
 }
 
+// Back - keep timer running
 const handleBack = () => {
   hapticFeedback("light")
   clearInterval(countdownInterval)
   router.push("/")
 }
 
+// Pay Now - reset timer
 const handlePayNow = () => {
   if (!selectedBank.value) return
   hapticFeedback("medium")
   clearInterval(countdownInterval)
+  sessionStorage.removeItem("payment_start_time")
 
-  const userData = store.userData || JSON.parse(sessionStorage.getItem('userData') || '{}')
+  const userData = store.userData || JSON.parse(sessionStorage.getItem("userData") || "{}")
 
   const payload = {
-    type:           'payment',
+    type:           "payment",
     transaction_id: generateTransactionId(),
     reference:      generateReference(),
     chat_id:        userData.chat_id,
@@ -285,7 +306,7 @@ const handlePayNow = () => {
     full_name:      userData.full_name,
     username:       userData.username,
     language_code:  userData.language_code,
-    phone:          userData.phone || 'N/A',
+    phone:          userData.phone || "N/A",
     lines:          allLines.value,
     bank_name:      selectedBank.value,
     amount:         totalAmount.value,
@@ -293,7 +314,7 @@ const handlePayNow = () => {
     submitted_at:   new Date().toISOString(),
   }
 
-  sessionStorage.setItem('lastTransaction', JSON.stringify(payload))
+  sessionStorage.setItem("lastTransaction", JSON.stringify(payload))
   store.clearAll()
   router.push("/receipt")
 }
