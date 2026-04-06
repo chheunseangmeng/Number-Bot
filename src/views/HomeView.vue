@@ -79,7 +79,7 @@
       v-if="alreadyPlayedToday"
       class="flex-1 flex flex-col items-center justify-center px-6 text-center"
     >
-      <div class="text-5xl mb-4">🎮</div>
+      <div class="text-5xl mb-4">🚫</div>
       <h2 class="text-lg font-bold text-[var(--tg-theme-text-color)] mb-2">
         Come back tomorrow!
       </h2>

@@ -115,6 +115,7 @@ const submittedAt = ref("")
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 
 onMounted(() => {
+ 
   const lastTxn = localStorage.getItem("lastTransaction")
   if (lastTxn) {
     const data = JSON.parse(lastTxn)
@@ -176,7 +177,7 @@ const saveImage = async () => {
 
 const handleClose = () => {
   hapticFeedback("light")
-  const lastTxn = JSON.parse(sessionStorage.getItem("lastTransaction") || "{}")
+  const lastTxn = JSON.parse(localStorage.getItem("lastTransaction") || "{}")
   sendData(lastTxn)
   closeMiniApp()
 }
