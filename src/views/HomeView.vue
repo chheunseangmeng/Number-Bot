@@ -317,12 +317,14 @@ const initGameId = () => {
   const lastDate = localStorage.getItem("last_played_date")
   const storedGameId = parseInt(localStorage.getItem("game_id") || "0")
   const lastTxn = localStorage.getItem("lastTransaction")
+  
+  // Check if we're in a fresh session (not just after payment)
+  const sessionStarted = sessionStorage.getItem("session_started")
 
   if (lastDate === today) {
     gameId.value = storedGameId || 1
     
-    // Only block if one_game_per_day is ON AND there's a transaction today
-    if (oneGamePerDay.value && lastTxn) {
+    if (oneGamePerDay.value && lastTxn && !sessionStarted) {
       alreadyPlayedToday.value = true
     } else {
       alreadyPlayedToday.value = false
@@ -336,9 +338,13 @@ const initGameId = () => {
     localStorage.removeItem("lastTransaction")
     alreadyPlayedToday.value = false
   }
+  
+  // Mark session as started
+  sessionStorage.setItem("session_started", "true")
 }
 
 onMounted(() => {
+  sessionStorage.removeItem("session_started")
   initGameId()
 })
 
