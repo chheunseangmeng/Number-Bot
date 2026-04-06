@@ -314,7 +314,7 @@ const handlePayNow = () => {
     submitted_at:   new Date().toISOString(),
   }
 
-  sessionStorage.setItem("lastTransaction", JSON.stringify(payload))
+  localStorage.setItem("lastTransaction", JSON.stringify(payload))
   store.clearAll()
   router.push("/receipt")
 }

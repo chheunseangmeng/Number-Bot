@@ -97,7 +97,7 @@
               </template>
               <template v-else> {{ line[0] }} , {{ line[1] }} </template>
             </span>
-            
+
             <!-- Delete Icon for each line -->
             <button
               class="text-sm cursor-pointer hover:scale-110 transition-transform"
@@ -187,7 +187,7 @@
         <div v-else class="flex gap-2">
           <NextButton
             v-if="canSave"
-            text="Add Line"
+            text="Save Line"
             variant="secondary"
             class="flex-1"
             :disabled="!canSubmit"
@@ -207,7 +207,7 @@
             text="Next"
             variant="primary"
             class="flex-1"
-            :disabled="!canSubmit && store.linesCount === 0"
+            :disabled="!canNext"
             @click="handleSubmit"
           />
         </div>
@@ -248,7 +248,8 @@ const initGameId = () => {
 
   if (lastDate === today) {
     gameId.value = storedGameId || 1
-    const lastTxn = sessionStorage.getItem("lastTransaction")
+    // ✅ FIX: localStorage persists after app close, unlike sessionStorage
+    const lastTxn = localStorage.getItem("lastTransaction")
     if (lastTxn) {
       alreadyPlayedToday.value = true
     }
@@ -257,6 +258,8 @@ const initGameId = () => {
     gameId.value = newId
     localStorage.setItem("game_id", newId)
     localStorage.setItem("last_played_date", today)
+    // ✅ FIX: clear old transaction on new day
+    localStorage.removeItem("lastTransaction")
     alreadyPlayedToday.value = false
   }
 }
@@ -275,8 +278,11 @@ const selectedNumbers = computed(() => {
 })
 
 const isShowLines = ref(false)
+
+// Both boxes filled
 const canSubmit = computed(() => store.selectedCount === 2)
 
+// Can add another line (not editing, not at max, and 2 selected)
 const canAddLine = computed(
   () =>
     store.selectedCount === 2 &&
@@ -284,9 +290,14 @@ const canAddLine = computed(
     store.linesCount < store.MAX_LINES - 1
 )
 
+// Can save current edit
 const canSave = computed(
   () => store.selectedCount === 2 && store.editingIndex !== null
 )
+
+// Next is allowed when boxes are both filled (2) or both empty (0)
+// Blocked only when exactly 1 number is selected (incomplete)
+const canNext = computed(() => store.selectedCount !== 1)
 
 const handleSaveLine = () => {
   if (!canSubmit.value) return
@@ -301,7 +312,7 @@ const handleEditLine = (index) => {
 
 const handleDeleteLine = async (index) => {
   hapticFeedback("light")
-  
+
   const confirmed = await new Promise((resolve) => {
     try {
       if (window.Telegram?.WebApp?.showPopup) {
@@ -364,7 +375,7 @@ const handleResetAll = async () => {
 }
 
 const handleSubmit = () => {
-  if (!canSubmit.value && store.linesCount === 0) return
+  if (!canNext.value) return
   hapticFeedback("medium")
 
   if (

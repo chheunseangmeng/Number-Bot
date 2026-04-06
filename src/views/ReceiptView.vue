@@ -115,7 +115,7 @@ const submittedAt = ref("")
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 
 onMounted(() => {
-  const lastTxn = sessionStorage.getItem("lastTransaction")
+  const lastTxn = localStorage.getItem("lastTransaction")
   if (lastTxn) {
     const data = JSON.parse(lastTxn)
     transactionId.value = data.transaction_id || "N/A"
