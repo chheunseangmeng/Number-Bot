@@ -316,19 +316,19 @@ const initGameId = () => {
   const today = getTodayDate()
   const lastDate = localStorage.getItem("last_played_date")
   const storedGameId = parseInt(localStorage.getItem("game_id") || "0")
+  const lastTxn = localStorage.getItem("lastTransaction")
 
   if (lastDate === today) {
     gameId.value = storedGameId || 1
-    // Only block if one_game_per_day is ON
-    if (oneGamePerDay.value) {
-      const lastTxn = localStorage.getItem("lastTransaction")
-      if (lastTxn) {
-        alreadyPlayedToday.value = true
-      }
+    
+    // Only block if one_game_per_day is ON AND there's a transaction today
+    if (oneGamePerDay.value && lastTxn) {
+      alreadyPlayedToday.value = true
     } else {
       alreadyPlayedToday.value = false
     }
   } else {
+    // New day → reset everything
     const newId = storedGameId + 1
     gameId.value = newId
     localStorage.setItem("game_id", newId)
