@@ -13,7 +13,11 @@
           <span class="text-sm font-semibold text-[var(--tg-theme-text-color)]">
             {{ store.userData?.full_name }}
           </span>
-          <span class="text-[10px] text-[var(--tg-theme-hint-color)]">
+          <!-- Double tap here to open admin panel -->
+          <span
+            class="text-[10px] text-[var(--tg-theme-hint-color)] cursor-pointer select-none"
+            @click="handleGameIdTap"
+          >
             {{ formattedGameId }} | 4:00 PM
           </span>
         </div>
@@ -31,12 +35,51 @@
       </div>
     </header>
 
+    <!-- ADMIN PANEL -->
+    <div
+      v-if="showAdminPanel"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
+      @click.self="showAdminPanel = false"
+    >
+      <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-xl">
+        <div class="text-3xl mb-2">⚙️</div>
+        <h2 class="text-sm font-bold text-gray-800 mb-1">Admin Config</h2>
+        <p class="text-xs text-gray-400 mb-5">Demo settings</p>
+
+        <!-- Toggle -->
+        <div class="flex items-center justify-between px-2 py-3 bg-gray-50 rounded-xl mb-4">
+          <span class="text-sm font-semibold text-gray-700">One game per day</span>
+          <button
+            class="relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none"
+            :class="oneGamePerDay ? 'bg-blue-500' : 'bg-gray-300'"
+            @click="toggleOneGamePerDay"
+          >
+            <span
+              class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300"
+              :class="oneGamePerDay ? 'translate-x-6' : 'translate-x-0'"
+            />
+          </button>
+        </div>
+
+        <p class="text-[11px] text-gray-400 mb-4">
+          {{ oneGamePerDay ? '🔒 Users can only play once per day' : '🔓 Users can play unlimited times' }}
+        </p>
+
+        <button
+          class="w-full py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-600 active:scale-95 transition-all"
+          @click="showAdminPanel = false"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
     <!-- ALREADY PLAYED TODAY -->
     <div
       v-if="alreadyPlayedToday"
       class="flex-1 flex flex-col items-center justify-center px-6 text-center"
     >
-      <div class="text-5xl mb-4">🚫</div>
+      <div class="text-5xl mb-4">🎮</div>
       <h2 class="text-lg font-bold text-[var(--tg-theme-text-color)] mb-2">
         Come back tomorrow!
       </h2>
@@ -53,13 +96,12 @@
 
       <hr class="w-full max-w-md my-2" />
 
-      <!-- LINES LIST - only show saved lines -->
+      <!-- LINES LIST -->
       <div
         v-if="store.lines.length > 0"
         v-show="isShowLines"
         class="w-full max-w-md flex-none mb-2 max-h-[108px] overflow-y-auto"
       >
-        <!-- Saved Lines -->
         <div
           v-for="(line, index) in store.lines"
           :key="index"
@@ -98,7 +140,6 @@
               <template v-else> {{ line[0] }} , {{ line[1] }} </template>
             </span>
 
-            <!-- Delete Icon for each line -->
             <button
               class="text-sm cursor-pointer hover:scale-110 transition-transform"
               :class="
@@ -228,7 +269,37 @@ const store = useGridStore()
 const router = useRouter()
 const { hapticFeedback } = useTelegram()
 
-// ── Game ID & 1-per-day logic ──────────────────────────────
+// Admin panel
+const showAdminPanel = ref(false)
+const oneGamePerDay = ref(localStorage.getItem("one_game_per_day") !== "false")
+
+let tapCount = 0
+let tapTimer = null
+
+const handleGameIdTap = () => {
+  tapCount++
+  if (tapTimer) clearTimeout(tapTimer)
+
+  if (tapCount >= 2) {
+    tapCount = 0
+    hapticFeedback("medium")
+    showAdminPanel.value = true
+  } else {
+    tapTimer = setTimeout(() => {
+      tapCount = 0
+    }, 600)
+  }
+}
+
+const toggleOneGamePerDay = () => {
+  oneGamePerDay.value = !oneGamePerDay.value
+  localStorage.setItem("one_game_per_day", oneGamePerDay.value ? "true" : "false")
+  hapticFeedback("light")
+  // Re-check if user already played today
+  initGameId()
+}
+
+// Game ID & 1-per-day logic 
 const gameId = ref(1)
 const alreadyPlayedToday = ref(false)
 
@@ -248,17 +319,20 @@ const initGameId = () => {
 
   if (lastDate === today) {
     gameId.value = storedGameId || 1
-    // ✅ FIX: localStorage persists after app close, unlike sessionStorage
-    const lastTxn = localStorage.getItem("lastTransaction")
-    if (lastTxn) {
-      alreadyPlayedToday.value = true
+    // Only block if one_game_per_day is ON
+    if (oneGamePerDay.value) {
+      const lastTxn = localStorage.getItem("lastTransaction")
+      if (lastTxn) {
+        alreadyPlayedToday.value = true
+      }
+    } else {
+      alreadyPlayedToday.value = false
     }
   } else {
     const newId = storedGameId + 1
     gameId.value = newId
     localStorage.setItem("game_id", newId)
     localStorage.setItem("last_played_date", today)
-    // ✅ FIX: clear old transaction on new day
     localStorage.removeItem("lastTransaction")
     alreadyPlayedToday.value = false
   }
@@ -268,7 +342,7 @@ onMounted(() => {
   initGameId()
 })
 
-// ── Selected Numbers ───────────────────────────────────────
+// Selected Numbers 
 const selectedNumbers = computed(() => {
   const boxes = ["?", "?"]
   store.selectedNumbers.forEach((num, i) => {
@@ -279,10 +353,8 @@ const selectedNumbers = computed(() => {
 
 const isShowLines = ref(false)
 
-// Both boxes filled
 const canSubmit = computed(() => store.selectedCount === 2)
 
-// Can add another line (not editing, not at max, and 2 selected)
 const canAddLine = computed(
   () =>
     store.selectedCount === 2 &&
@@ -290,13 +362,10 @@ const canAddLine = computed(
     store.linesCount < store.MAX_LINES - 1
 )
 
-// Can save current edit
 const canSave = computed(
   () => store.selectedCount === 2 && store.editingIndex !== null
 )
 
-// Next is allowed when boxes are both filled (2) or both empty (0)
-// Blocked only when exactly 1 number is selected (incomplete)
 const canNext = computed(() => store.selectedCount !== 1)
 
 const handleSaveLine = () => {
