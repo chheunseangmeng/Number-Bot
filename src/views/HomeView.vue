@@ -15,23 +15,27 @@
     <!-- Admin Panel Component -->
     <AdminPanel
       :show="showAdminPanel"
-      v-model="expiryHourUTC"
+      v-model:hour="expiryHourUTC"
+      v-model:minute="expiryMinuteUTC"
       @close="showAdminPanel = false"
       @toggleGamePerDay="handleToggleGamePerDay"
     />
 
-    <!-- Already Played Today -->
+    <!-- Already Played or Expired -->
     <div
-      v-if="alreadyPlayedToday"
+      v-if="alreadyPlayedToday || isGameExpired"
       class="flex-1 flex flex-col items-center justify-center px-6 text-center"
     >
       <div class="text-5xl mb-4">🚫</div>
       <h2 class="text-lg font-bold text-[var(--tg-theme-text-color)] mb-2">
         Come back tomorrow!
       </h2>
-      <p class="text-sm text-[var(--tg-theme-hint-color)]">
+      <p v-if="alreadyPlayedToday" class="text-sm text-[var(--tg-theme-hint-color)]">
         You have already played today ({{ formattedGameId }}). A new game will
         be available tomorrow.
+      </p>
+      <p v-else class="text-sm text-[var(--tg-theme-hint-color)]">
+        Today&apos;s game has expired. A new game will be available tomorrow.
       </p>
     </div>
 
@@ -113,6 +117,9 @@ const oneGamePerDay = ref(localStorage.getItem('one_game_per_day') !== 'false');
 const expiryHourUTC = ref(
   parseInt(localStorage.getItem('expiry_hour_utc') || '19'),
 );
+const expiryMinuteUTC = ref(
+  parseInt(localStorage.getItem('expiry_minute_utc') || '0'),
+);
 
 // TIMER
 const {
@@ -124,8 +131,23 @@ const {
 } = useGameTimer();
 
 const gameExpiryDateTimeCambodia = computed(() =>
-  getCambodiaTime(expiryHourUTC.value),
+  getCambodiaTime(expiryHourUTC.value, expiryMinuteUTC.value),
 );
+
+const isGameExpired = computed(() => {
+  const now = new Date();
+  const expiryTodayUTC = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      expiryHourUTC.value,
+      expiryMinuteUTC.value,
+      0,
+    ),
+  );
+  return now.getTime() >= expiryTodayUTC.getTime();
+});
 
 // GAME ID
 const gameId = ref(1);
@@ -309,20 +331,24 @@ const handleSubmit = () => {
   router.push('/payment');
 };
 
-// Watch expiry hour changes
-watch(expiryHourUTC, () => {
-  startExpiryCountdown(expiryHourUTC.value);
+// Watch expiry time changes
+watch([expiryHourUTC, expiryMinuteUTC], () => {
+  startExpiryCountdown(expiryHourUTC.value, expiryMinuteUTC.value);
   localStorage.setItem('expiry_hour_utc', expiryHourUTC.value.toString());
+  localStorage.setItem('expiry_minute_utc', expiryMinuteUTC.value.toString());
 });
 
 // LIFECYCLE
 onMounted(() => {
   sessionStorage.removeItem('session_started');
   initGameId();
-  startExpiryCountdown(expiryHourUTC.value);
+  startExpiryCountdown(expiryHourUTC.value, expiryMinuteUTC.value);
 });
 
 onUnmounted(() => {
   stopExpiryCountdown();
 });
 </script>
+
+
+

@@ -4,7 +4,7 @@ export function useGameTimer() {
   const timeToExpiry = ref(null);
   let expiryCountdownInterval = null;
 
-  const getExpiryTimeUTC = (expiryHourUTC) => {
+  const getExpiryTimeUTC = (expiryHourUTC, expiryMinuteUTC = 0) => {
     const now = new Date();
     const expiryTime = new Date(
       Date.UTC(
@@ -12,7 +12,7 @@ export function useGameTimer() {
         now.getUTCMonth(),
         now.getUTCDate(),
         expiryHourUTC,
-        0,
+        expiryMinuteUTC,
         0,
       ),
     );
@@ -24,8 +24,8 @@ export function useGameTimer() {
     return expiryTime;
   };
 
-  const getCambodiaTime = (expiryHourUTC) => {
-    const expiryUTC = getExpiryTimeUTC(expiryHourUTC);
+  const getCambodiaTime = (expiryHourUTC, expiryMinuteUTC = 0) => {
+    const expiryUTC = getExpiryTimeUTC(expiryHourUTC, expiryMinuteUTC);
     const expiryCambodia = new Date(expiryUTC.getTime() + 7 * 60 * 60 * 1000);
 
     const year = expiryCambodia.getUTCFullYear();
@@ -37,9 +37,9 @@ export function useGameTimer() {
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
-  const updateTimeToExpiry = (expiryHourUTC) => {
+  const updateTimeToExpiry = (expiryHourUTC, expiryMinuteUTC = 0) => {
     const now = new Date();
-    const expiryTime = getExpiryTimeUTC(expiryHourUTC);
+    const expiryTime = getExpiryTimeUTC(expiryHourUTC, expiryMinuteUTC);
     const diffMs = expiryTime.getTime() - now.getTime();
 
     if (diffMs <= 0) {
@@ -59,15 +59,15 @@ export function useGameTimer() {
     timeToExpiry.value = { hours, minutes, seconds };
   };
 
-  const startExpiryCountdown = (expiryHourUTC) => {
+  const startExpiryCountdown = (expiryHourUTC, expiryMinuteUTC = 0) => {
     if (expiryCountdownInterval) {
       clearInterval(expiryCountdownInterval);
     }
 
-    updateTimeToExpiry(expiryHourUTC);
+    updateTimeToExpiry(expiryHourUTC, expiryMinuteUTC);
 
     expiryCountdownInterval = setInterval(() => {
-      updateTimeToExpiry(expiryHourUTC);
+      updateTimeToExpiry(expiryHourUTC, expiryMinuteUTC);
     }, 1000);
   };
 
