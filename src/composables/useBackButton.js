@@ -1,22 +1,22 @@
-import { ref } from 'vue'
+import { ref } from 'vue';
 
 export function useBackButton(onConfirm) {
-  const showExitConfirm = ref(false)
+  const showExitConfirm = ref(false);
 
   const init = () => {
-    const tg = window.Telegram?.WebApp
+    const tg = window.Telegram?.WebApp;
     if (tg) {
-      tg.enableClosingConfirmation()
+      tg.enableClosingConfirmation();
     }
-  }
+  };
 
   const handleLeave = () => {
-    onConfirm()
-  }
+    onConfirm();
+  };
 
   return {
     showExitConfirm,
     init,
     handleLeave,
-  }
+  };
 }

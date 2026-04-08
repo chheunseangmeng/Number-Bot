@@ -16,34 +16,34 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import ConfirmDialog from './components/ui/ConfirmDialog.vue'
-import { useTelegram } from './composables/useTelegram'
-import { useGridStore } from './stores/gridStore'
-import { useBackButton } from './composables/useBackButton'
+import { ref, onMounted } from 'vue';
+import ConfirmDialog from './components/ui/ConfirmDialog.vue';
+import { useTelegram } from './composables/useTelegram';
+import { useGridStore } from './stores/gridStore';
+import { useBackButton } from './composables/useBackButton';
 
-const { closeMiniApp, hapticFeedback } = useTelegram()
-const store = useGridStore()
-const { init } = useBackButton(closeMiniApp)
+const { closeMiniApp, hapticFeedback } = useTelegram();
+const store = useGridStore();
+const { init } = useBackButton(closeMiniApp);
 
-const showAgeConfirm = ref(false)
+const showAgeConfirm = ref(false);
 
 onMounted(() => {
-  store.loadFromSession()
+  store.loadFromSession();
   if (!sessionStorage.getItem('age_confirmed')) {
-    showAgeConfirm.value = true
+    showAgeConfirm.value = true;
   }
-  init()
-})
+  init();
+});
 
 const handleYes = () => {
-  hapticFeedback('light')
-  sessionStorage.setItem('age_confirmed', 'true')
-  showAgeConfirm.value = false
-}
+  hapticFeedback('light');
+  sessionStorage.setItem('age_confirmed', 'true');
+  showAgeConfirm.value = false;
+};
 
 const handleNo = () => {
-  hapticFeedback('light')
-  closeMiniApp()
-}
+  hapticFeedback('light');
+  closeMiniApp();
+};
 </script>

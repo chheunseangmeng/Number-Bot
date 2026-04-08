@@ -7,6 +7,7 @@ A Telegram Mini App for selecting lucky numbers and processing payments.
 ## 📱 What is the process of this app?
 
 This Mini App is built with **Vue 3** and is opened by the LuckyNumber Bot after the user completes onboarding. It communicates with the bot in two ways:
+
 - **Bot → Mini App**: User data is passed via URL parameters when the Mini App opens
 - **Mini App → Bot**: Payment data is sent back when the user closes the receipt
 
@@ -56,9 +57,7 @@ Deployed on **Vercel** — requires `vercel.json` for routing:
 
 ```json
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
 ```
 
@@ -76,10 +75,13 @@ Deployed on **Vercel** — requires `vercel.json` for routing:
 ```sh
 npm install
 ```
+
 ```sh
 npm run dev
 ```
+
 ### Compile and Minify for Production
+
 ```sh
 npm run build
 ```

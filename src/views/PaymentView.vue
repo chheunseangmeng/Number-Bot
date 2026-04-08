@@ -1,5 +1,7 @@
 <template>
-  <div class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)] overflow-hidden">
+  <div
+    class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)] overflow-hidden"
+  >
     <!-- Header -->
     <header class="text-center pt-3 pb-1 flex-none relative">
       <button
@@ -8,10 +10,10 @@
       >
         <i class="fa-solid fa-angle-left"></i>Back
       </button>
-      <h1 class="text-md font-bold text-gray-600 italic">Confirm and make payment</h1>
-      <p class="text-xs text-[var(--tg-theme-hint-color)]">
-        Select your bank
-      </p>
+      <h1 class="text-md font-bold text-gray-600 italic">
+        Confirm and make payment
+      </h1>
+      <p class="text-xs text-[var(--tg-theme-hint-color)]">Select your bank</p>
     </header>
 
     <!-- Expired Overlay -->
@@ -19,7 +21,9 @@
       v-if="isExpired"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
     >
-      <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-xl">
+      <div
+        class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-xl"
+      >
         <div class="text-5xl mb-3">⏰</div>
         <h2 class="text-base font-bold text-gray-800 mb-1">Time Expired!</h2>
         <p class="text-sm text-gray-500 mb-5">
@@ -36,8 +40,12 @@
 
     <div class="flex-1 flex flex-col items-center px-3 overflow-y-auto">
       <!-- Order Summary -->
-      <div class="w-full max-w-xs bg-[var(--tg-theme-secondary-bg-color)] rounded-xl p-3 mb-3 flex-none">
-        <h2 class="text-xs font-semibold text-[var(--tg-theme-hint-color)] mb-1">
+      <div
+        class="w-full max-w-xs bg-[var(--tg-theme-secondary-bg-color)] rounded-xl p-3 mb-3 flex-none"
+      >
+        <h2
+          class="text-xs font-semibold text-[var(--tg-theme-hint-color)] mb-1"
+        >
           Order Summary
         </h2>
 
@@ -46,7 +54,9 @@
           :key="index"
           class="flex justify-between items-center py-1"
         >
-          <span class="text-xs text-[var(--tg-theme-hint-color)]">Line {{ index + 1 }}</span>
+          <span class="text-xs text-[var(--tg-theme-hint-color)]"
+            >Line {{ index + 1 }}</span
+          >
           <span class="text-xs font-bold text-[var(--tg-theme-text-color)]">
             {{ line[0] }} , {{ line[1] }}
           </span>
@@ -54,7 +64,9 @@
 
         <hr class="my-1 border-[var(--tg-theme-hint-color)] opacity-20" />
         <div class="flex justify-between items-center">
-          <span class="text-xs font-semibold text-[var(--tg-theme-hint-color)]">Total</span>
+          <span class="text-xs font-semibold text-[var(--tg-theme-hint-color)]"
+            >Total</span
+          >
           <span class="text-base font-bold text-[var(--tg-theme-text-color)]">
             ${{ totalAmount.toFixed(2) }}
           </span>
@@ -63,7 +75,9 @@
 
       <!-- Bank Selection -->
       <div class="w-full max-w-xs flex-none">
-        <h2 class="text-xs font-semibold text-[var(--tg-theme-hint-color)] mb-2">
+        <h2
+          class="text-xs font-semibold text-[var(--tg-theme-hint-color)] mb-2"
+        >
           Select Bank
         </h2>
         <div class="grid grid-cols-2 gap-2">
@@ -96,7 +110,8 @@
             <span
               v-if="selectedBank === bank.name"
               class="ml-auto text-[var(--tg-theme-button-color)] text-sm"
-            >✓</span>
+              >✓</span
+            >
           </button>
         </div>
       </div>
@@ -106,32 +121,50 @@
         <div class="relative w-28 h-28">
           <svg class="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
             <circle
-              cx="50" cy="50" r="44"
+              cx="50"
+              cy="50"
+              r="44"
               fill="none"
               stroke="currentColor"
               stroke-width="5"
               class="text-[var(--tg-theme-hint-color)] opacity-20"
             />
             <circle
-              cx="50" cy="50" r="44"
+              cx="50"
+              cy="50"
+              r="44"
               fill="none"
               stroke-width="5"
               stroke-linecap="round"
-              :stroke="timeLeft <= 30 ? '#ef4444' : 'var(--tg-theme-button-color)'"
+              :stroke="
+                timeLeft <= 30 ? '#ef4444' : 'var(--tg-theme-button-color)'
+              "
               :stroke-dasharray="circumference"
               :stroke-dashoffset="dashOffset"
-              style="transition: stroke-dashoffset 0.3s linear, stroke 0.3s"
+              style="
+                transition:
+                  stroke-dashoffset 0.3s linear,
+                  stroke 0.3s;
+              "
             />
           </svg>
 
-          <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <div
+            class="absolute inset-0 flex flex-col items-center justify-center"
+          >
             <span
               class="text-xl font-bold tabular-nums"
-              :class="timeLeft <= 30 ? 'text-red-500' : 'text-[var(--tg-theme-text-color)]'"
+              :class="
+                timeLeft <= 30
+                  ? 'text-red-500'
+                  : 'text-[var(--tg-theme-text-color)]'
+              "
             >
               {{ formattedTime }}
             </span>
-            <span class="text-[9px] font-medium mt-0.5 text-[var(--tg-theme-hint-color)]">
+            <span
+              class="text-[9px] font-medium mt-0.5 text-[var(--tg-theme-hint-color)]"
+            >
               remaining
             </span>
           </div>
@@ -167,154 +200,155 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, onActivated } from "vue"
-import { useRouter } from "vue-router"
-import { useGridStore } from "../stores/gridStore"
-import { useTelegram } from "../composables/useTelegram"
+import { ref, computed, onMounted, onUnmounted, onActivated } from 'vue';
+import { useRouter } from 'vue-router';
+import { useGridStore } from '../stores/gridStore';
+import { useTelegram } from '../composables/useTelegram';
 
-const router = useRouter()
-const store = useGridStore()
-const { hapticFeedback } = useTelegram()
+const router = useRouter();
+const store = useGridStore();
+const { hapticFeedback } = useTelegram();
 
-const selectedBank = ref("")
-const PRICE_PER_LINE = 1.0
-const TOTAL_TIME = 180
-const isExpired = ref(false)
-const timeLeft = ref(TOTAL_TIME)
-let countdownInterval = null
+const selectedBank = ref('');
+const PRICE_PER_LINE = 1.0;
+const TOTAL_TIME = 180;
+const isExpired = ref(false);
+const timeLeft = ref(TOTAL_TIME);
+let countdownInterval = null;
 
 // Countdown
-const circumference = 2 * Math.PI * 44
+const circumference = 2 * Math.PI * 44;
 
 const dashOffset = computed(() => {
-  const progress = timeLeft.value / TOTAL_TIME
-  return circumference * (1 - progress)
-})
+  const progress = timeLeft.value / TOTAL_TIME;
+  return circumference * (1 - progress);
+});
 
 const formattedTime = computed(() => {
-  const minutes = Math.floor(timeLeft.value / 60)
-  const seconds = String(timeLeft.value % 60).padStart(2, "0")
-  return `${minutes}:${seconds}`
-})
+  const minutes = Math.floor(timeLeft.value / 60);
+  const seconds = String(timeLeft.value % 60).padStart(2, '0');
+  return `${minutes}:${seconds}`;
+});
 
 const startCountdown = () => {
-  if (countdownInterval) clearInterval(countdownInterval)
-  
+  if (countdownInterval) clearInterval(countdownInterval);
+
   countdownInterval = setInterval(() => {
     if (timeLeft.value > 0) {
-      timeLeft.value--
+      timeLeft.value--;
       if (timeLeft.value <= 0) {
-        clearInterval(countdownInterval)
-        isExpired.value = true
-        hapticFeedback("medium")
+        clearInterval(countdownInterval);
+        isExpired.value = true;
+        hapticFeedback('medium');
       }
     }
-  }, 1000)
-}
+  }, 1000);
+};
 
 const resetTimer = () => {
-  clearInterval(countdownInterval)
-  timeLeft.value = TOTAL_TIME
-  isExpired.value = false
-  startCountdown()
-}
+  clearInterval(countdownInterval);
+  timeLeft.value = TOTAL_TIME;
+  isExpired.value = false;
+  startCountdown();
+};
 
 // Reset timer every time the component is mounted/activated
 onMounted(() => {
-  resetTimer()
-})
+  resetTimer();
+});
 
 // For keep-alive components - reset when page becomes active again
 onActivated(() => {
-  resetTimer()
-})
+  resetTimer();
+});
 
 onUnmounted(() => {
-  clearInterval(countdownInterval)
-})
+  clearInterval(countdownInterval);
+});
 
 // Expired
 const handleExpiredConfirm = () => {
-  router.push("/")
-}
+  router.push('/');
+};
 
 // Banks
 const banks = [
-  { name: "ABA",    logo: "/banks/aba.png" },
-  { name: "ACLEDA", logo: "/banks/acleda.png" },
-  { name: "JTrust", logo: "/banks/jtrust.png" },
-  { name: "Wing",   logo: "/banks/wing.png" },
-]
+  { name: 'ABA', logo: '/banks/aba.png' },
+  { name: 'ACLEDA', logo: '/banks/acleda.png' },
+  { name: 'JTrust', logo: '/banks/jtrust.png' },
+  { name: 'Wing', logo: '/banks/wing.png' },
+];
 
 // All Lines
 const allLines = computed(() => {
   if (store.editingIndex !== null) {
     return store.lines.map((l, i) =>
-      i === store.editingIndex ? [...store.selectedNumbers] : l
-    )
+      i === store.editingIndex ? [...store.selectedNumbers] : l,
+    );
   }
   if (store.selectedCount === 2) {
-    return [...store.lines, [...store.selectedNumbers]]
+    return [...store.lines, [...store.selectedNumbers]];
   }
-  return store.lines
-})
+  return store.lines;
+});
 
-const totalAmount = computed(() => allLines.value.length * PRICE_PER_LINE)
+const totalAmount = computed(() => allLines.value.length * PRICE_PER_LINE);
 
 // Generate Transaction ID
 const generateTransactionId = () => {
-  const timestamp = Date.now().toString().slice(-8)
-  const randomPart = Math.random().toString(36).substring(2, 4).toUpperCase()
-  return `TXN${timestamp}${randomPart}`
-}
+  const timestamp = Date.now().toString().slice(-8);
+  const randomPart = Math.random().toString(36).substring(2, 4).toUpperCase();
+  return `TXN${timestamp}${randomPart}`;
+};
 
 // Generate Reference
 const generateReference = () => {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, "0")
-  const day = String(now.getDate()).padStart(2, "0")
-  const seq = String(Math.floor(Math.random() * 999) + 1).padStart(3, "0")
-  return `REF-${year}${month}${day}${seq}`
-}
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const seq = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
+  return `REF-${year}${month}${day}${seq}`;
+};
 
 // Back
 const handleBack = () => {
-  hapticFeedback("light")
-  router.push("/")
-}
+  hapticFeedback('light');
+  router.push('/');
+};
 
 // Pay Now
 const handlePayNow = () => {
-  if (!selectedBank.value) return
-  hapticFeedback("medium")
-  clearInterval(countdownInterval)
+  if (!selectedBank.value) return;
+  hapticFeedback('medium');
+  clearInterval(countdownInterval);
 
-  const userData = store.userData || JSON.parse(sessionStorage.getItem("userData") || "{}")
+  const userData =
+    store.userData || JSON.parse(sessionStorage.getItem('userData') || '{}');
 
   const payload = {
-    type:           "payment",
+    type: 'payment',
     transaction_id: generateTransactionId(),
-    reference:      generateReference(),
-    chat_id:        userData.chat_id,
-    user_id:        userData.user_id,
-    first_name:     userData.first_name,
-    last_name:      userData.last_name,
-    full_name:      userData.full_name,
-    username:       userData.username,
-    language_code:  userData.language_code,
-    phone:          userData.phone || "N/A",
-    lines:          allLines.value,
-    bank_name:      selectedBank.value,
-    amount:         totalAmount.value,
-    line_count:     allLines.value.length,
-    submitted_at:   new Date().toISOString(),
-  }
+    reference: generateReference(),
+    chat_id: userData.chat_id,
+    user_id: userData.user_id,
+    first_name: userData.first_name,
+    last_name: userData.last_name,
+    full_name: userData.full_name,
+    username: userData.username,
+    language_code: userData.language_code,
+    phone: userData.phone || 'N/A',
+    lines: allLines.value,
+    bank_name: selectedBank.value,
+    amount: totalAmount.value,
+    line_count: allLines.value.length,
+    submitted_at: new Date().toISOString(),
+  };
 
-  localStorage.setItem("lastTransaction", JSON.stringify(payload))
-  store.clearAll()
-  router.push("/receipt")
-}
+  localStorage.setItem('lastTransaction', JSON.stringify(payload));
+  store.clearAll();
+  router.push('/receipt');
+};
 </script>
 
 <style scoped>
