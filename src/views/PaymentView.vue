@@ -3,12 +3,12 @@
     <!-- Header -->
     <header class="text-center pt-3 pb-1 flex-none relative">
       <button
-        class="absolute left-3 border px-2 py-1 rounded-md top-3 text-sm text-[var(--tg-theme-hint-color)] active:scale-95 transition-all"
+        class="absolute left-3 top-3 text-sm text-[var(--tg-theme-hint-color)] hover:text-black active:scale-95 transition-all"
         @click="handleBack"
       >
         <i class="fa-solid fa-angle-left"></i>Back
       </button>
-      <h1 class="text-md font-bold text-gray-600 italic">Payment</h1>
+      <h1 class="text-md font-bold text-gray-600 italic">Confirm and make payment</h1>
       <p class="text-xs text-[var(--tg-theme-hint-color)]">
         Select your bank
       </p>
@@ -167,7 +167,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue"
+import { ref, computed, onMounted, onUnmounted, onActivated } from "vue"
 import { useRouter } from "vue-router"
 import { useGridStore } from "../stores/gridStore"
 import { useTelegram } from "../composables/useTelegram"
@@ -198,6 +198,8 @@ const formattedTime = computed(() => {
 })
 
 const startCountdown = () => {
+  if (countdownInterval) clearInterval(countdownInterval)
+  
   countdownInterval = setInterval(() => {
     if (timeLeft.value > 0) {
       timeLeft.value--
@@ -210,23 +212,21 @@ const startCountdown = () => {
   }, 1000)
 }
 
-onMounted(() => {
-  const savedStartTime = sessionStorage.getItem("payment_start_time")
-
-  if (savedStartTime) {
-    const elapsed = Math.floor((Date.now() - parseInt(savedStartTime)) / 1000)
-    const remaining = TOTAL_TIME - elapsed
-    if (remaining <= 0) {
-      isExpired.value = true
-      return
-    }
-    timeLeft.value = remaining
-  } else {
-    sessionStorage.setItem("payment_start_time", Date.now().toString())
-    timeLeft.value = TOTAL_TIME
-  }
-
+const resetTimer = () => {
+  clearInterval(countdownInterval)
+  timeLeft.value = TOTAL_TIME
+  isExpired.value = false
   startCountdown()
+}
+
+// Reset timer every time the component is mounted/activated
+onMounted(() => {
+  resetTimer()
+})
+
+// For keep-alive components - reset when page becomes active again
+onActivated(() => {
+  resetTimer()
 })
 
 onUnmounted(() => {
@@ -235,7 +235,6 @@ onUnmounted(() => {
 
 // Expired
 const handleExpiredConfirm = () => {
-  sessionStorage.removeItem("payment_start_time")
   router.push("/")
 }
 
@@ -279,19 +278,17 @@ const generateReference = () => {
   return `REF-${year}${month}${day}${seq}`
 }
 
-// Back - keep timer running
+// Back
 const handleBack = () => {
   hapticFeedback("light")
-  clearInterval(countdownInterval)
   router.push("/")
 }
 
-// Pay Now - reset timer
+// Pay Now
 const handlePayNow = () => {
   if (!selectedBank.value) return
   hapticFeedback("medium")
   clearInterval(countdownInterval)
-  sessionStorage.removeItem("payment_start_time")
 
   const userData = store.userData || JSON.parse(sessionStorage.getItem("userData") || "{}")
 

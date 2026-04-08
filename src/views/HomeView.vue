@@ -13,18 +13,23 @@
           <span class="text-sm font-semibold text-[var(--tg-theme-text-color)]">
             {{ store.userData?.full_name }}
           </span>
-          <!-- Double tap here to open admin panel -->
           <span
             class="text-[10px] text-[var(--tg-theme-hint-color)] cursor-pointer select-none"
             @click="handleGameIdTap"
           >
-            {{ formattedGameId }} | 4:00 PM
+            {{ formattedGameId }} | {{ gameExpiryDateTimeCambodia }}
           </span>
         </div>
       </div>
 
-      <!-- Right: Reset All Button -->
+      <!-- Right: Reset All Button + Countdown -->
       <div class="text-right">
+        <div class="text-right">
+          <div v-if="timeToExpiry !== null" class="text-xs text-[var(--tg-theme-hint-color)] mb-1">
+            <span class="font-mono">{{ formattedTimeToExpiryCambodia }}</span>
+          </div>
+          <div v-else class="text-xs text-red-400 mb-1">⏰ Game Expired</div>
+        </div>
         <button
           v-if="store.lines.length > 0 || store.selectedCount > 0"
           class="text-xs text-red-400 px-3 py-1 rounded-md hover:bg-red-500 hover:text-white border cursor-pointer active:scale-95 transition-all duration-300 ease-in-out"
@@ -44,9 +49,9 @@
       <div class="bg-white rounded-2xl p-6 w-full max-w-xs text-center shadow-xl">
         <div class="text-3xl mb-2">⚙️</div>
         <h2 class="text-sm font-bold text-gray-800 mb-1">Admin Config</h2>
-        <p class="text-xs text-gray-400 mb-5">Demo settings</p>
+        <p class="text-xs text-gray-400 mb-5">Game settings</p>
 
-        <!-- Toggle -->
+        <!-- One game per day toggle -->
         <div class="flex items-center justify-between px-2 py-3 bg-gray-50 rounded-xl mb-4">
           <span class="text-sm font-semibold text-gray-700">One game per day</span>
           <button
@@ -61,9 +66,23 @@
           </button>
         </div>
 
-        <p class="text-[11px] text-gray-400 mb-4">
-          {{ oneGamePerDay ? '🔒 Users can only play once per day' : '🔓 Users can play unlimited times' }}
-        </p>
+        <!-- Expiry Time Setting (UTC) -->
+        <div class="px-2 py-3 bg-gray-50 rounded-xl mb-4">
+          <label class="text-sm font-semibold text-gray-700 block mb-2">
+            Game Expiry Time (UTC)
+          </label>
+          <input
+            type="number"
+            v-model.number="expiryHourUTC"
+            min="0"
+            max="23"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-center text-lg font-bold"
+            @change="saveExpiryTime"
+          />
+          <p class="text-[10px] text-gray-400 mt-1">
+            Current: {{ expiryHourUTC }}:00 UTC ({{ expiryHourUTC + 7 }}:00 Cambodia)
+          </p>
+        </div>
 
         <button
           class="w-full py-2 rounded-lg text-sm font-semibold bg-gray-100 text-gray-600 active:scale-95 transition-all"
@@ -91,12 +110,11 @@
 
     <!-- MAIN -->
     <div v-else class="flex-1 flex flex-col items-center p-2 min-h-0 w-full">
-      <!-- Grid -->
       <NumberGrid />
 
       <hr class="w-full max-w-md my-2" />
 
-      <!-- LINES LIST -->
+      <!-- LINES LIST - default visible -->
       <div
         v-if="store.lines.length > 0"
         v-show="isShowLines"
@@ -160,7 +178,6 @@
         v-if="store.linesCount < store.MAX_LINES || store.editingIndex !== null"
         class="flex gap-2 w-full max-w-md flex-none"
       >
-        <!-- Box 1 -->
         <div
           class="flex-1 h-10 rounded-md flex items-center justify-center text-2xl font-bold relative"
           :class="
@@ -179,7 +196,6 @@
           </span>
         </div>
 
-        <!-- Box 2 -->
         <div
           class="flex-1 h-10 rounded-md flex items-center justify-center text-2xl font-bold relative"
           :class="
@@ -215,10 +231,10 @@
 
       <!-- ACTION BUTTONS -->
       <div class="w-full max-w-md flex-none mt-1 mb-1">
-        <!-- MAX reached → FULL NEXT -->
+        <!-- MAX reached → Pay Now -->
         <NextButton
           v-if="store.linesCount === store.MAX_LINES && store.editingIndex === null"
-          text="Next"
+          text="Pay Now"
           variant="primary"
           class="w-full"
           @click="handleSubmit"
@@ -245,7 +261,7 @@
           />
 
           <NextButton
-            text="Next"
+            text="Pay Now"
             variant="primary"
             class="flex-1"
             :disabled="!canNext"
@@ -258,7 +274,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from "vue"
+import { computed, ref, onMounted, onUnmounted, watch } from "vue"
 import { useRouter } from "vue-router"
 import NumberGrid from "@/components/grid/NumberGrid.vue"
 import NextButton from "@/components/ui/NextButton.vue"
@@ -269,9 +285,12 @@ const store = useGridStore()
 const router = useRouter()
 const { hapticFeedback } = useTelegram()
 
-// Admin panel
+// ADMIN PANEL 
 const showAdminPanel = ref(false)
 const oneGamePerDay = ref(localStorage.getItem("one_game_per_day") !== "false")
+
+// Expiry hour in UTC (default 19 = 7PM UTC)
+const expiryHourUTC = ref(parseInt(localStorage.getItem("expiry_hour_utc") || "19"))
 
 let tapCount = 0
 let tapTimer = null
@@ -295,11 +314,24 @@ const toggleOneGamePerDay = () => {
   oneGamePerDay.value = !oneGamePerDay.value
   localStorage.setItem("one_game_per_day", oneGamePerDay.value ? "true" : "false")
   hapticFeedback("light")
-  // Re-check if user already played today
   initGameId()
 }
 
-// Game ID & 1-per-day logic 
+const saveExpiryTime = () => {
+  let hour = expiryHourUTC.value
+  if (isNaN(hour)) hour = 19
+  if (hour < 0) hour = 0
+  if (hour > 23) hour = 23
+  
+  expiryHourUTC.value = hour
+  localStorage.setItem("expiry_hour_utc", hour.toString())
+  hapticFeedback("light")
+  
+  // Restart countdown with new expiry time
+  startExpiryCountdown()
+}
+
+// GAME ID 
 const gameId = ref(1)
 const alreadyPlayedToday = ref(false)
 
@@ -317,20 +349,17 @@ const initGameId = () => {
   const lastDate = localStorage.getItem("last_played_date")
   const storedGameId = parseInt(localStorage.getItem("game_id") || "0")
   const lastTxn = localStorage.getItem("lastTransaction")
-  
-  // Check if we're in a fresh session (not just after payment)
   const sessionStarted = sessionStorage.getItem("session_started")
 
   if (lastDate === today) {
     gameId.value = storedGameId || 1
-    
+
     if (oneGamePerDay.value && lastTxn && !sessionStarted) {
       alreadyPlayedToday.value = true
     } else {
       alreadyPlayedToday.value = false
     }
   } else {
-    // New day → reset everything
     const newId = storedGameId + 1
     gameId.value = newId
     localStorage.setItem("game_id", newId)
@@ -338,17 +367,98 @@ const initGameId = () => {
     localStorage.removeItem("lastTransaction")
     alreadyPlayedToday.value = false
   }
-  
-  // Mark session as started
+
   sessionStorage.setItem("session_started", "true")
 }
 
-onMounted(() => {
-  sessionStorage.removeItem("session_started")
-  initGameId()
+// COUNTDOWN TO CUSTOM EXPIRY TIME UTC 
+const timeToExpiry = ref(null)
+let expiryCountdownInterval = null
+
+// Get today's expiry time based on admin configured hour (UTC)
+const getExpiryTimeUTC = () => {
+  const now = new Date()
+  const expiryTime = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      expiryHourUTC.value,  // Admin configurable hour
+      0,
+      0
+    )
+  )
+
+  if (now.getTime() >= expiryTime.getTime()) {
+    expiryTime.setUTCDate(expiryTime.getUTCDate() + 1)
+  }
+
+  return expiryTime
+}
+
+// Convert UTC to Cambodia time (UTC+7) for display
+const gameExpiryDateTimeCambodia = computed(() => {
+  const expiryUTC = getExpiryTimeUTC()
+  const expiryCambodia = new Date(expiryUTC.getTime() + 7 * 60 * 60 * 1000)
+  
+  const year = expiryCambodia.getUTCFullYear()
+  const month = String(expiryCambodia.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(expiryCambodia.getUTCDate()).padStart(2, '0')
+  const hours = String(expiryCambodia.getUTCHours()).padStart(2, '0')
+  const minutes = String(expiryCambodia.getUTCMinutes()).padStart(2, '0')
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}`
 })
 
-// Selected Numbers 
+const updateTimeToExpiry = () => {
+  const now = new Date()
+  const expiryTime = getExpiryTimeUTC()
+  const diffMs = expiryTime.getTime() - now.getTime()
+
+  if (diffMs <= 0) {
+    timeToExpiry.value = null
+
+    if (expiryCountdownInterval) {
+      clearInterval(expiryCountdownInterval)
+      expiryCountdownInterval = null
+    }
+
+    return
+  }
+
+  const totalSeconds = Math.floor(diffMs / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  timeToExpiry.value = { hours, minutes, seconds }
+}
+
+const formattedTimeToExpiryCambodia = computed(() => {
+  if (!timeToExpiry.value) return ""
+  const { hours, minutes, seconds } = timeToExpiry.value
+  return `${hours}h ${minutes}m ${seconds}s`
+})
+
+const startExpiryCountdown = () => {
+  if (expiryCountdownInterval) {
+    clearInterval(expiryCountdownInterval)
+  }
+
+  updateTimeToExpiry()
+
+  expiryCountdownInterval = setInterval(() => {
+    updateTimeToExpiry()
+  }, 1000)
+}
+
+// Watch for expiry hour changes
+watch(expiryHourUTC, () => {
+  startExpiryCountdown()
+})
+// END COUNTDOWN 
+
+// GAME LOGIC 
 const selectedNumbers = computed(() => {
   const boxes = ["?", "?"]
   store.selectedNumbers.forEach((num, i) => {
@@ -357,7 +467,7 @@ const selectedNumbers = computed(() => {
   return boxes
 })
 
-const isShowLines = ref(false)
+const isShowLines = ref(true)
 
 const canSubmit = computed(() => store.selectedCount === 2)
 
@@ -406,7 +516,6 @@ const handleDeleteLine = async (index) => {
         resolve(window.confirm(`Are you sure you want to delete Line ${index + 1}?`))
       }
     } catch (error) {
-      console.warn("showPopup failed:", error)
       resolve(window.confirm(`Are you sure you want to delete Line ${index + 1}?`))
     }
   })
@@ -438,7 +547,6 @@ const handleResetAll = async () => {
         resolve(window.confirm("Are you sure you want to reset all lines?"))
       }
     } catch (error) {
-      console.warn("showPopup failed:", error)
       resolve(window.confirm("Are you sure you want to reset all lines?"))
     }
   })
@@ -463,4 +571,18 @@ const handleSubmit = () => {
 
   router.push("/payment")
 }
+
+// LIFECYCLE 
+onMounted(() => {
+  sessionStorage.removeItem("session_started")
+  initGameId()
+  startExpiryCountdown()
+})
+
+onUnmounted(() => {
+  if (expiryCountdownInterval) {
+    clearInterval(expiryCountdownInterval)
+    expiryCountdownInterval = null
+  }
+})
 </script>

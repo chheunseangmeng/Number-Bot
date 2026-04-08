@@ -3,7 +3,7 @@
     <ConfirmDialog
       v-if="showAgeConfirm"
       title="Age Verification"
-      message="You must be 18 years or older to use this app. Are you 18+?"
+      message="You must be 18+ to use this app. Are you 18+?"
       yesText="Yes, I'm 18+"
       noText="No"
       icon="🔞"
