@@ -68,7 +68,7 @@
             >Total</span
           >
           <span class="text-base font-bold text-[var(--tg-theme-text-color)]">
-            ${{ totalAmount.toFixed(2) }}
+            {{ totalAmount.toLocaleString() }} ៛
           </span>
         </div>
       </div>
@@ -210,7 +210,7 @@ const store = useGridStore();
 const { hapticFeedback } = useTelegram();
 
 const selectedBank = ref('');
-const PRICE_PER_LINE = 1.0;
+const PRICE_PER_LINE = 2000;
 const TOTAL_TIME = 180;
 const isExpired = ref(false);
 const timeLeft = ref(TOTAL_TIME);

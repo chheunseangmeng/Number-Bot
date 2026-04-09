@@ -63,9 +63,9 @@
           <div class="mt-3 pt-2 border-t-2 border-[#1e88e5]">
             <div class="flex justify-between items-center mb-2">
               <span class="font-bold text-[#1e88e5] text-xs">Total</span>
-              <span class="font-bold text-base text-[#1e88e5]"
-                >${{ amount }}</span
-              >
+              <span class="font-bold text-base text-[#1e88e5]">
+                {{ Number(amount || 0).toLocaleString() }} ៛
+              </span>
             </div>
             <p class="text-center text-[10px] text-gray-500 mt-1 italic pb-4">
               Thank you for visiting LuckyNumber!
