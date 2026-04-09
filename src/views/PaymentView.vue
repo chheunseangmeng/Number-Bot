@@ -3,7 +3,7 @@
     class="h-screen flex flex-col bg-[var(--tg-theme-bg-color)] overflow-hidden"
   >
     <!-- Header -->
-    <header class="text-center pt-3 pb-1 flex-none relative">
+    <header class="text-center pt-3 pb-1 mb-3 flex-none relative">
       <button
         class="absolute left-3 top-3 text-sm text-[var(--tg-theme-hint-color)] hover:text-black active:scale-95 transition-all"
         @click="handleBack"
@@ -13,7 +13,6 @@
       <h1 class="text-md font-bold text-gray-600 italic">
         Confirm and make payment
       </h1>
-      <p class="text-xs text-[var(--tg-theme-hint-color)]">Select your bank</p>
     </header>
 
     <!-- Expired Overlay -->
@@ -67,8 +66,8 @@
           <span class="text-xs font-semibold text-[var(--tg-theme-hint-color)]"
             >Total</span
           >
-          <span class="text-base font-bold text-[var(--tg-theme-text-color)]">
-            {{ totalAmount.toLocaleString() }} ៛
+          <span class="text-sm font-bold text-[var(--tg-theme-text-color)]">
+            {{ totalAmount.toLocaleString() }} Riel
           </span>
         </div>
       </div>

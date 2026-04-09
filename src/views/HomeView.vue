@@ -154,7 +154,7 @@ const gameId = ref(1);
 const alreadyPlayedToday = ref(false);
 
 const formattedGameId = computed(
-  () => 'Game #' + String(gameId.value).padStart(3, '0'),
+  () => 'Game #' + String(gameId.value).padStart(2, '0'),
 );
 
 const getTodayDate = () => {

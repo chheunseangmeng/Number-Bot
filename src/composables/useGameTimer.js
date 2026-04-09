@@ -27,6 +27,8 @@ export function useGameTimer() {
   const getCambodiaTime = (expiryHourUTC, expiryMinuteUTC = 0) => {
     const expiryUTC = getExpiryTimeUTC(expiryHourUTC, expiryMinuteUTC);
     const expiryCambodia = new Date(expiryUTC.getTime() + 7 * 60 * 60 * 1000);
+    const now = new Date();
+    const nowCambodia = new Date(now.getTime() + 7 * 60 * 60 * 1000);
 
     const year = expiryCambodia.getUTCFullYear();
     const month = String(expiryCambodia.getUTCMonth() + 1).padStart(2, '0');
@@ -34,7 +36,14 @@ export function useGameTimer() {
     const hours = String(expiryCambodia.getUTCHours()).padStart(2, '0');
     const minutes = String(expiryCambodia.getUTCMinutes()).padStart(2, '0');
 
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
+    const isSameDay =
+      nowCambodia.getUTCFullYear() === expiryCambodia.getUTCFullYear() &&
+      nowCambodia.getUTCMonth() === expiryCambodia.getUTCMonth() &&
+      nowCambodia.getUTCDate() === expiryCambodia.getUTCDate();
+
+    const dayLabel = isSameDay ? ' Today' : ' Tomorrow';
+
+    return `${year}-${month}-${day} ${hours}:${minutes}${dayLabel}`;
   };
 
   const updateTimeToExpiry = (expiryHourUTC, expiryMinuteUTC = 0) => {
